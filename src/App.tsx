@@ -11,7 +11,7 @@ import {
 import { AccessibilityBar } from './components/common/AccessibilityBar';
 import { HostDashboard } from './components/host/HostDashboard';
 import { PlayerClient } from './components/player/PlayerClient';
-import { useSettings } from './context/SettingsContext';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
 
 type AppMode = 'landing' | 'host' | 'player' | 'split';
 
@@ -23,6 +23,33 @@ function getRoomCodeFromUrl(): string {
   } catch {
     return '';
   }
+}
+
+function HostScreen({ onBackHome }: { onBackHome: () => void }) {
+  const { dir } = useSettings();
+  return (
+    <main dir={dir} className="min-h-screen p-3 sm:p-6">
+      <HostDashboard onBackHome={onBackHome} />
+    </main>
+  );
+}
+
+function PlayerScreen({
+  initialRoomCode,
+  onBackHome,
+}: {
+  initialRoomCode?: string;
+  onBackHome: () => void;
+}) {
+  const { dir } = useSettings();
+  return (
+    <main dir={dir} className="min-h-screen p-3 sm:p-6">
+      <PlayerClient
+        initialRoomCode={initialRoomCode}
+        onBackHome={onBackHome}
+      />
+    </main>
+  );
 }
 
 export function App() {
@@ -60,20 +87,20 @@ export function App() {
 
   if (mode === 'host') {
     return (
-      <main className="min-h-screen p-3 sm:p-6">
-        <HostDashboard onBackHome={handleBackHome} />
-      </main>
+      <SettingsProvider scope="host" applyToDocument={true}>
+        <HostScreen onBackHome={handleBackHome} />
+      </SettingsProvider>
     );
   }
 
   if (mode === 'player') {
     return (
-      <main className="min-h-screen p-3 sm:p-6">
-        <PlayerClient
+      <SettingsProvider scope="player" applyToDocument={true}>
+        <PlayerScreen
           initialRoomCode={urlRoomCode || undefined}
           onBackHome={handleBackHome}
         />
-      </main>
+      </SettingsProvider>
     );
   }
 
@@ -102,12 +129,16 @@ export function App() {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
           <section className="xl:col-span-7 rounded-3xl bg-white/50 border-2 border-rose-200/80 p-3 sm:p-4 shadow-lg">
-            <HostDashboard initialRoomCode={splitRoomCode} compact />
+            <SettingsProvider scope="host" applyToDocument={false}>
+              <HostDashboard initialRoomCode={splitRoomCode} compact />
+            </SettingsProvider>
           </section>
 
           <section className="xl:col-span-5 rounded-[2.2rem] bg-slate-900 p-3 shadow-2xl border-4 border-slate-800">
             <div className="rounded-[1.6rem] bg-gradient-to-b from-amber-50 to-rose-50 p-3 sm:p-4 min-h-[620px]">
-              <PlayerClient initialRoomCode={splitRoomCode} compact />
+              <SettingsProvider scope="player" applyToDocument={false}>
+                <PlayerClient initialRoomCode={splitRoomCode} compact />
+              </SettingsProvider>
             </div>
           </section>
         </div>

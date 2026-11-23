@@ -303,12 +303,14 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
                   {/* Card Back (Face-Down) */}
                   <div
                     style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-amber-500 border-4 border-white shadow-md group-hover:shadow-xl group-active:scale-95 transition-transform flex flex-col items-center justify-center p-2 text-white"
+                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-amber-500 border-4 border-white shadow-md group-hover:shadow-xl group-active:scale-95 transition-transform flex flex-col items-center justify-center p-1.5 sm:p-2 text-white overflow-hidden"
                   >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/50 shadow-inner">
-                      <span className="text-xl sm:text-2xl font-black tracking-tight">70</span>
+                    <div className="w-full max-w-[88%] px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/50 shadow-inner">
+                      <span className="text-xs sm:text-sm font-black tracking-tight text-center leading-tight break-words select-none drop-shadow-sm">
+                        {t('memoryCardBack')}
+                      </span>
                     </div>
-                    <Sparkles className="w-4 h-4 mt-1.5 text-amber-100 opacity-90" />
+                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-1.5 text-amber-100 opacity-90 shrink-0" />
                   </div>
 
                   {/* Card Front (Face-Up) */}

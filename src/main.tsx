@@ -6,7 +6,7 @@ import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <SettingsProvider defaultLang="he">
+    <SettingsProvider defaultLang="he" scope="app" applyToDocument={true}>
       <App />
     </SettingsProvider>
   </React.StrictMode>

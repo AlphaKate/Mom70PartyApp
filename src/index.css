@@ -28,6 +28,10 @@
   }
 }
 
+.settings-scope-container {
+  width: 100%;
+}
+
 @keyframes floatGentle {
   0%,
   100% {

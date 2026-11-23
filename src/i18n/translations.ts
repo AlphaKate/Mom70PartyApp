@@ -146,7 +146,7 @@ const he = {
   memoryMoves: 'מהלכים',
   memoryMatched: 'התאמה מושלמת!',
   memoryCompleted: 'אלופים! מצאתם את כל הזוגות!',
-  memoryCardBack: '70',
+  memoryCardBack: 'גירסא 7.0',
 
   // Puzzle Game
   puzzleTitle: 'פאזל חושף תמונה',
@@ -350,7 +350,7 @@ const ru: TranslationDict = {
   memoryMoves: 'Ходов',
   memoryMatched: 'Отличная пара!',
   memoryCompleted: 'Браво! Все пары найдены!',
-  memoryCardBack: '70',
+  memoryCardBack: 'Версия 7.0',
 
   // Puzzle Game
   puzzleTitle: 'Семейный фото-пазл',
@@ -551,7 +551,7 @@ const en: TranslationDict = {
   memoryMoves: 'Moves',
   memoryMatched: 'Great Match!',
   memoryCompleted: 'Amazing! You matched every pair!',
-  memoryCardBack: '70',
+  memoryCardBack: 'Version 7.0',
 
   // Puzzle Game
   puzzleTitle: 'Family Photo Puzzle',
