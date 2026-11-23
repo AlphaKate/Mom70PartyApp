@@ -159,11 +159,12 @@ export function App() {
             <span>{t('birthdayBadge')}</span>
           </div>
 
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-100 via-pink-100 to-amber-100 border-2 border-rose-300 flex items-center justify-center mx-auto shadow-md animate-float-gentle">
-            <Cake className="w-10 h-10 text-rose-600" aria-hidden="true" />
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-rose-500 via-pink-500 to-amber-500 border-4 border-white flex flex-col items-center justify-center mx-auto shadow-xl animate-float-gentle text-white">
+            <Sparkles className="w-5 h-5 text-amber-200 mb-0.5" aria-hidden="true" />
+            <span className="text-3xl font-black tracking-tight leading-none drop-shadow-sm">7.0</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-rose-900 leading-tight">
+          <h1 className="text-4xl sm:text-6xl font-black text-rose-900 leading-tight tracking-tight">
             {t('appTitle')}
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto font-medium">

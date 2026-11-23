@@ -2,7 +2,7 @@ import { Language } from '../types/game';
 
 const he = {
   // General & App Shell
-  appTitle: 'אמא חוגגת 70!',
+  appTitle: 'Mom 7.0',
   appSubtitle: 'משחק משפחתי אינטראקטיבי לחגיגת יום ההולדת של אמא',
   birthdayBadge: '70 שנות אור, אהבה ומשפחה',
   chooseModeTitle: 'בחרו איך תרצו להצטרף לחגיגה',
@@ -206,7 +206,7 @@ export type TranslationDict = Record<TranslationKey, string>;
 
 const ru: TranslationDict = {
   // General & App Shell
-  appTitle: 'Маме исполняется 70!',
+  appTitle: 'Mom 7.0',
   appSubtitle: 'Интерактивная семейная игра в честь 70-летия мамы',
   birthdayBadge: '70 лет света, любви и тепла',
   chooseModeTitle: 'Выберите способ подключения к празднику',
@@ -407,7 +407,7 @@ const ru: TranslationDict = {
 
 const en: TranslationDict = {
   // General & App Shell
-  appTitle: "Mom's 70th Celebration!",
+  appTitle: 'Mom 7.0',
   appSubtitle: "An interactive family game celebrating Mom's 70th birthday",
   birthdayBadge: '70 Years of Light, Love & Family',
   chooseModeTitle: 'Choose how to join the celebration',
