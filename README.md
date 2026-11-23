@@ -1,0 +1,111 @@
+# 🎂 אמא חוגגת 70 | Mom's 70th Birthday Party App
+
+אפליקציית מסיבה משפחתית אינטראקטיבית מרובת-משתתפים לחגיגת יום הולדת 70 לאמא — עם מסך טלוויזיה ראשי למנחה, הצטרפות מהנייד באמצעות QR Code, תמיכה מלאה בעברית (RTL), רוסית ואנגלית (LTR), נגישות לגיל השלישי ולילדים, ופרטיות מלאה ללא שמירת מידע בענן.
+
+An interactive multiplayer family party game celebrating Mom's 70th birthday — featuring a Host TV Dashboard, instant mobile QR join, full trilingual support (`he` RTL, `ru` LTR, `en` LTR), accessibility controls for all ages, and zero cloud data retention.
+
+---
+
+## ✨ מה כולל המשחק? | Key Features
+
+- **5 מיני-משחקים חגיגיים (תחרות אישית לכל משתתף, ללא קבוצות):**
+  1. **משחק הזיכרון (`MEMORY`)** – התאמת 6 זוגות קלפים של אמא עם מרוץ התקדמות חי על המסך הראשי.
+  2. **פאזל משפחתי (`PUZZLE`)** – הרכבת תמונת הפתעה בהחלפת אריחים במגע, עם הצצה לתמונה וחשיפת סיפור משפחתי בסיום.
+  3. **טריוויה "מי מכיר את אמא?" (`TRIVIA`)** – שאלות עם כפתורים צבעוניים גדולים, טיימר וניקוד מבוסס דיוק ומהירות.
+  4. **"מה אמא הייתה אומרת?" (`QUOTES`)** – בועות דיבור עם התגובות והציטוטים האייקוניים של אמא.
+  5. **פסיפס הברכות 70 וטקס סיום (`WISHES` & `FINALE`)** – כל משתתף שולח ברכה מהנייד שמאירה פסיפס חי בצורת המספר **70**, כולל פודיום מנצחים 1-2-3 וקונפטי.
+- **פרטיות מלאה (Zero Cloud Retention):**
+  - ללא בסיס נתונים בענן וללא שרת אחסון מרכזי.
+  - תקשורת ישירה בין הניידים למסך המארח באמצעות **WebRTC P2P (PeerJS)** וערוץ `BroadcastChannel` מקומי למצב הדגמה במכשיר אחד.
+- **נגישות ושליטה:**
+  - החלפת שפה בזמן אמת (`עברית` / `Русский` / `English`) עם התאמת `RTL` / `LTR`.
+  - הגדלת גופן ב-3 רמות (`רגיל` 16px / `גדול` 19px / `ענק` 22px).
+  - אפקטים קוליים מובנים ב-Web Audio API (ללא קבצי סאונד חיצוניים) + כפתור השתקה (`Mute`).
+  - נגן **Spotify Embed** מובנה במסך המארח שנשאר פעיל לאורך כל שלבי המשחק.
+  - **שליטה ידנית מלאה למנחה:** השהיה/המשך לשיחה וצחוק, מעבר ידני בין שלבים ושאלות, חשיפת תשובות וכפתור הוספת שחקן דמה (`Add Demo Bot`).
+
+---
+
+## 🚀 הרצה מקומית ובדיקה מהירה | Local Setup & Split-Screen Demo
+
+דרישות קדם: [Node.js](https://nodejs.org/) (גרסה 18 ומעלה).
+
+```bash
+# 1. התקנת חבילות | Install dependencies
+npm install
+
+# 2. הפעלת שרת פיתוח | Start development server
+npm run dev
+
+# 3. בנייה לפרודקשן | Build for production
+npm run build
+
+# 4. תצוגה מקדימה לבנייה | Preview production build
+npm run preview
+```
+
+> **טיפ לבדיקה מיידית ממחשב אחד:** במסך הבית לחצו על **"מצב הדגמה במסך מפוצל" (`Split-Screen Demo Mode`)** — מסך המארח וטלפון השחקן ייפתחו זה לצד זה ויסתנכרנו אוטומטית בזמן אמת!
+
+---
+
+## 📂 איך מכינים תוכן משפחתי ב-Google Drive ו-Google Sheets?
+
+האפליקציה כוללת תוכן עשיר מוכן מראש בעברית, רוסית ואנגלית (איורים ושאלות), כך שאפשר לשחק מיד גם בלי למלא קישורים. אם תרצו להכניס תמונות ושאלות אישיות של אמא:
+
+### שלב 1: תיקיית תמונות ב-Google Drive (`photos/`)
+1. צרו תיקייה ב-Google Drive (למשל בשם `photos`) והעלו אליה תמונות משפחתיות.
+2. לחצו לחיצה ימנית על התיקייה ← **שתף (Share)** ← **גישה כללית (General access)** ← בחרו **"כל מי שיש לו את הקישור יכול להציג" (`Anyone with the link` → `Viewer`)**.
+3. לתמונות שתרצו לשלב בתוך משחק הזיכרון, הפאזל או שאלות הטריוויה, פתחו כל קובץ תמונה ב-Drive, בחרו **שיתוף (Viewer)** והעתיקו את קישור הקובץ (`https://drive.google.com/file/d/FILE_ID/view`) לתוך עמודת התמונה בגיליון ה-Google Sheets (האפליקציה ממירה אוטומטית קישורי Drive לתמונות ישירות בדפדפן).
+
+### שלב 2: הכנת טבלת Google Sheets לשאלות ותמונות
+1. צרו קובץ Google Sheets חדש והגדירו שיתוף: **"כל מי שיש לו את הקישור יכול להציג" (`Anyone with the link` → `Viewer`)**.
+2. בשורה הראשונה (שורת הכותרת) כתבו את שמות העמודות הבאים (באנגלית, באותיות קטנות):
+
+| עמודה (Column) | תיאור ודוגמה (Description & Example) |
+|---|---|
+| `category` | סוג השורה: `trivia`, `quotes`, `memory`, `puzzle`, או `config` |
+| `question_he` / `question_ru` / `question_en` | נוסח השאלה או הסיטואציה בכל שפה |
+| `options_he` / `options_ru` / `options_en` | 4 תשובות אפשריות מופרדות בתו `\|` (לדוגמה: `תשובה 1 \| תשובה 2 \| תשובה 3 \| תשובה 4`) |
+| `correct_index` | אינדקס התשובה הנכונה (`0` לתשובה הראשונה, `1` לשנייה, `2` לשלישית, `3` לרביעית) |
+| `funfact_he` / `funfact_ru` / `funfact_en` | *(אופציונלי)* סיפור קצר או עובדה מצחיקה שנחשפת אחרי התשובה |
+| `image_url` | *(אופציונלי)* קישור לתמונה (Google Drive או כתובת תמונה ישירה) עבור `trivia`, `quotes`, או `puzzle` |
+| `image_a` / `image_b` | *(עבור `memory`)* קישור לתמונה א' ותמונה ב' של הזוג |
+| `label_a_he` / `label_a_ru` / `label_a_en` | *(עבור `memory`)* כיתוב לקלף א' |
+| `label_b_he` / `label_b_ru` / `label_b_en` | *(עבור `memory`)* כיתוב לקלף ב' |
+| `title_he` / `title_ru` / `title_en` | *(עבור `puzzle`)* כותרת הפאזל |
+| `story_he` / `story_ru` / `story_en` | *(עבור `puzzle`)* הסיפור שנחשף כשמשלימים את הפאזל |
+| `grid_size` | *(עבור `puzzle`)* גודל לוח הפאזל (`3` ל-3x3, אפשר בין `2` ל-`5`) |
+| `mom_name_he` / `mom_name_ru` / `mom_name_en` | *(עבור שורת `config`)* שם החוגגת להצגה בכותרת ובפסיפס |
+
+3. הדביקו את קישור ה-Google Drive וה-Google Sheets במסך ההגדרות של המארח ולחצו **"פתיחת לובי המסיבה"**.
+
+### שלב 3: חיבור פלייליסט Spotify
+1. ב-Spotify, בחרו את הפלייליסט האהוב על אמא ← **Share (שתף)** ← **Copy link to playlist**.
+2. הדביקו את הקישור (`https://open.spotify.com/playlist/...`) בשדה ה-Spotify במסך ההגדרות (או השאירו ריק לשימוש בפלייליסט החגיגי המוגדר כברירת מחדל).
+
+---
+
+## 🌐 פריסה חינמית לענן (Vercel / GitHub Pages)
+
+פריסת האפליקציה באינטרנט מאפשרת לכל האורחים לסרוק את ה-QR מהנייד (גם ב-4G/5G ללא תלות ב-Wi-Fi הביתי).
+
+### אפשרות א': Vercel (מומלץ ומהיר — דקה אחת)
+1. היכנסו ל-[vercel.com](https://vercel.com) והתחברו עם חשבון GitHub.
+2. לחצו **Add New → Project** ובחרו את המאגר `AlphaKate/Mom70PartyApp`.
+3. ודאו שההגדרות הן:
+   - **Framework Preset:** `Vite`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. לחצו **Deploy** — תקבלו כתובת HTTPS מוכנה לשיתוף בטלוויזיה ובניידים.
+
+### אפשרות ב': GitHub Pages
+קובץ `vite.config.ts` כבר מוגדר עם `base: './'`, ולכן האפליקציה עובדת חלק מתחת לכל נתיב ב-GitHub Pages:
+1. הריצו `npm run build` (יוצר את תיקיית `dist/`).
+2. הגדירו במאגר GitHub תחת **Settings → Pages** פריסה באמצעות GitHub Actions (או פרסמו את תוכן תיקיית `dist/` לענף `gh-pages`).
+
+---
+
+## 📄 רישוי | Open-Source Licenses
+
+כל התלויות בפרויקט הן ברישיונות קוד פתוח מתירניים בלבד (**MIT**, **ISC**, **Apache-2.0**):
+`react`, `react-dom`, `lucide-react`, `canvas-confetti`, `vite`, `tailwindcss`, `typescript`, בתוספת שכבת WebRTC PeerJS ויוצר QR SVG מובנה (`src/vendor/`).
