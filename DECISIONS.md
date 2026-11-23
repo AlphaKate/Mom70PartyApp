@@ -38,3 +38,5 @@
      - שפות נתמכות: עברית, רוסית, אנגלית (i18n, כולל תמיכה ב-RTL ו-LTR).
      - נגישות: תמיכה בשינוי גודל גופן (Font Scaling) והתאמה רספונסיבית מלאה לכל סוגי המסכים.
   4. **מבנה תיקיית Google Drive:** הוחלט להשהות את ההחלטה לשלבים הבאים.
+  5. **סנכרון וניהול קוד ב-GitHub:**
+     - נפתח והוגדר Repository פרטי מסונכרן: [https://github.com/AlphaKate/Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp)
