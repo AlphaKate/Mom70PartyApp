@@ -40,3 +40,6 @@
   4. **מבנה תיקיית Google Drive:** הוחלט להשהות את ההחלטה לשלבים הבאים.
   5. **סנכרון וניהול קוד ב-GitHub:**
      - נפתח והוגדר Repository פרטי מסונכרן: [https://github.com/AlphaKate/Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp)
+
+### שיחה 2 (23/11/2026): גיבוש דרישות (שלב 2)
+- **חיבור Google Drive:** נבחרה אפשרות א' – תיקייה המוגדרת "בעל הקישור יכול לצפות" (Anyone with the link can view). האפליקציה תטען את התוכן ישירות מהלינק ללא צורך ב-OAuth / חשבון Google מורכב.
