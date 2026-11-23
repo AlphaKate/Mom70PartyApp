@@ -55,7 +55,16 @@ function PlayerScreen({
 export function App() {
   const { dir, t } = useSettings();
   const [urlRoomCode, setUrlRoomCode] = useState<string>(() => getRoomCodeFromUrl());
-  const [mode, setMode] = useState<AppMode>(() => (getRoomCodeFromUrl() ? 'player' : 'landing'));
+  const [mode, setMode] = useState<AppMode>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlMode = params.get('mode') as AppMode | null;
+      if (urlMode === 'host' || urlMode === 'player' || urlMode === 'split') {
+        return urlMode;
+      }
+    } catch {}
+    return getRoomCodeFromUrl() ? 'player' : 'landing';
+  });
   const [splitRoomCode, setSplitRoomCode] = useState<string>('7070');
 
   useEffect(() => {
