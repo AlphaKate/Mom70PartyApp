@@ -648,12 +648,48 @@ export function extractGoogleSheetId(url: string): { sheetId: string; gid?: stri
   };
 }
 
+export function extractDriveFileId(urlOrId: string): string | null {
+  const trimmed = urlOrId.trim();
+  if (!trimmed || /\/folders\//i.test(trimmed)) return null;
+
+  const fileMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]{15,})/);
+  if (fileMatch) return fileMatch[1];
+
+  const lh3Match = trimmed.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]{15,})/);
+  if (lh3Match) return lh3Match[1];
+
+  const openIdMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
+  if (openIdMatch) return openIdMatch[1];
+
+  if (/^[a-zA-Z0-9_-]{25,50}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return null;
+}
+
+export function getDriveImageEndpoints(urlOrId: string): string[] {
+  const trimmed = (urlOrId ?? '').trim();
+  if (!trimmed) return [];
+
+  const fileId = extractDriveFileId(trimmed);
+  if (fileId) {
+    return [
+      `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`,
+      `https://lh3.googleusercontent.com/d/${fileId}=w1200`,
+      `https://drive.google.com/uc?export=view&id=${fileId}`,
+    ];
+  }
+
+  return [trimmed];
+}
+
 export function extractDriveFolderId(url: string): string | null {
   const trimmed = url.trim();
   if (!trimmed) return null;
-  const folderMatch = trimmed.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+  const folderMatch = trimmed.match(/\/folders\/([a-zA-Z0-9_-]+)/);
   if (folderMatch) return folderMatch[1];
-  const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+  const idMatch = trimmed.match(/drive\.google\.com\/drive\/[^#\s]*[?&]id=([a-zA-Z0-9_-]+)/);
   return idMatch?.[1] ?? null;
 }
 
@@ -661,18 +697,187 @@ export function normalizeDriveImageUrl(url?: string): string {
   const trimmed = (url ?? '').trim();
   if (!trimmed) return '';
 
-  // Convert Google Drive share links into direct embeddable image thumbnails
-  const fileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9-_]+)/);
-  if (fileMatch) {
-    return `https://drive.google.com/thumbnail?id=${fileMatch[1]}&sz=w1200`;
-  }
-
-  const openIdMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?[^#]*id=([a-zA-Z0-9-_]+)/);
-  if (openIdMatch) {
-    return `https://drive.google.com/thumbnail?id=${openIdMatch[1]}&sz=w1200`;
+  const fileId = extractDriveFileId(trimmed);
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
   }
 
   return trimmed;
+}
+
+export function extractDriveImagesFromText(rawInput: string): string[] {
+  const trimmed = (rawInput ?? '').trim();
+  if (!trimmed) return [];
+
+  const folderId = extractDriveFolderId(trimmed);
+  const seen = new Set<string>();
+  const results: string[] = [];
+
+  const addFileId = (fileId: string) => {
+    if (!fileId || fileId === folderId) return;
+    const normalized = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+    if (!seen.has(normalized)) {
+      seen.add(normalized);
+      results.push(normalized);
+    }
+  };
+
+  // Scan full text for /file/d/<ID> and open/uc/thumbnail?id=<ID> patterns
+  const filePattern = /\/file\/d\/([a-zA-Z0-9_-]{15,})/g;
+  for (const match of trimmed.matchAll(filePattern)) {
+    addFileId(match[1]);
+  }
+
+  const queryPattern = /(?:open|uc|thumbnail)\?[^#\s]*id=([a-zA-Z0-9_-]{15,})/g;
+  for (const match of trimmed.matchAll(queryPattern)) {
+    addFileId(match[1]);
+  }
+
+  // Also check whitespace/comma/semicolon/newline separated tokens
+  const tokens = trimmed
+    .split(/[\s,;]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  for (const token of tokens) {
+    if (/\/folders\//i.test(token)) continue;
+
+    const tokenFileId = extractDriveFileId(token);
+    if (tokenFileId) {
+      addFileId(tokenFileId);
+      continue;
+    }
+
+    if (
+      /^https?:\/\/\S+/i.test(token) &&
+      (/\.(?:png|jpe?g|webp|gif|avif|svg)(?:[?#].*)?$/i.test(token) ||
+        /lh3\.googleusercontent\.com/i.test(token))
+    ) {
+      if (!seen.has(token)) {
+        seen.add(token);
+        results.push(token);
+      }
+    }
+  }
+
+  return results;
+}
+
+function parseDriveFolderHtmlForImages(html: string, folderId: string): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+
+  const addId = (id: string) => {
+    if (!id || id === folderId) return;
+    const url = `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+    if (!seen.has(url)) {
+      seen.add(url);
+      urls.push(url);
+    }
+  };
+
+  const patterns = [
+    /id="entry-([a-zA-Z0-9_-]{15,})"/g,
+    /\/file\/d\/([a-zA-Z0-9_-]{15,})/g,
+    /data-id="([a-zA-Z0-9_-]{15,})"/g,
+  ];
+
+  for (const regex of patterns) {
+    for (const match of html.matchAll(regex)) {
+      addId(match[1]);
+    }
+  }
+
+  return urls;
+}
+
+export async function discoverDriveFolderImages(folderId: string): Promise<string[]> {
+  if (!folderId) return [];
+
+  const embeddedUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
+  const candidates = [
+    embeddedUrl,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(embeddedUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(embeddedUrl)}`,
+  ];
+
+  for (const candidateUrl of candidates) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller
+      ? setTimeout(() => controller.abort(), 4500)
+      : undefined;
+
+    try {
+      const response = await fetch(candidateUrl, {
+        mode: 'cors',
+        ...(controller ? { signal: controller.signal } : {}),
+      });
+      if (!response.ok) continue;
+
+      const html = await response.text();
+      const discovered = parseDriveFolderHtmlForImages(html, folderId);
+      if (discovered.length > 0) {
+        return discovered;
+      }
+    } catch {
+      // Try next fallback endpoint
+    } finally {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
+
+  return [];
+}
+
+export function buildMemoryPairsFromDrivePhotos(imageUrls: string[]): MemoryPair[] {
+  const uniqueUrls = Array.from(new Set(imageUrls.map((u) => u.trim()).filter(Boolean))).slice(0, 8);
+  if (uniqueUrls.length === 0) return [];
+
+  const drivePairs: MemoryPair[] = uniqueUrls.map((photoUrl, idx) => {
+    const num = idx + 1;
+    const labels: Record<'he' | 'ru' | 'en', string> = {
+      he: `תמונה משפחתית #${num}`,
+      ru: `Семейное фото #${num}`,
+      en: `Family Photo #${num}`,
+    };
+    return {
+      id: `drive-mem-${num}`,
+      imageA: photoUrl,
+      labelA: labels,
+      imageB: photoUrl,
+      labelB: labels,
+    };
+  });
+
+  if (drivePairs.length === 1) {
+    return [...drivePairs, ...DEFAULT_GAME_CONTENT.memoryPairs.slice(0, 3)];
+  }
+
+  return drivePairs;
+}
+
+export function buildPuzzlesFromDrivePhotos(imageUrls: string[]): PuzzleItem[] {
+  const uniqueUrls = Array.from(new Set(imageUrls.map((u) => u.trim()).filter(Boolean))).slice(0, 12);
+  return uniqueUrls.map((photoUrl, idx) => {
+    const num = idx + 1;
+    return {
+      id: `drive-puz-${num}`,
+      imageUrl: photoUrl,
+      title: {
+        he: `פאזל תמונה מהדרייב #${num}`,
+        ru: `Фото-пазл из Google Drive #${num}`,
+        en: `Google Drive Photo Puzzle #${num}`,
+      },
+      story: {
+        he: 'רגע משפחתי אהוב מתוך אלבום ה-Google Drive של אמא ❤️',
+        ru: 'Тёплое семейное воспоминание из альбома мамы в Google Drive ❤️',
+        en: "A cherished family moment from Mom's Google Drive album ❤️",
+      },
+      gridSize: 3,
+    };
+  });
 }
 
 function parseCsv(csvText: string): string[][] {
@@ -893,6 +1098,25 @@ function parseSheetRowsIntoContent(
   };
 }
 
+export async function resolveDrivePhotos(driveInput: string): Promise<string[]> {
+  const cleanInput = (driveInput ?? '').trim();
+  if (!cleanInput) return [];
+
+  const directPhotos = extractDriveImagesFromText(cleanInput);
+  const folderId = extractDriveFolderId(cleanInput);
+  const discoveredPhotos = folderId ? await discoverDriveFolderImages(folderId) : [];
+
+  const seen = new Set<string>();
+  const combined: string[] = [];
+  for (const url of [...directPhotos, ...discoveredPhotos]) {
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      combined.push(url);
+    }
+  }
+  return combined;
+}
+
 export async function loadContentFromGoogleDrive(
   driveFolderUrl: string,
   sheetsUrl?: string,
@@ -902,15 +1126,17 @@ export async function loadContentFromGoogleDrive(
   const cleanSheetsUrl = (sheetsUrl ?? '').trim();
   const cleanSpotifyUrl = (spotifyUrl ?? '').trim() || DEFAULT_GAME_CONTENT.spotifyUrl;
 
-  // Validate folder URL structure (direct folder listing in browser without OAuth is restricted by CORS,
-  // so Drive image links are resolved directly from the Sheet or merged cleanly with built-in content).
-  extractDriveFolderId(cleanDriveUrl);
+  const drivePhotos = await resolveDrivePhotos(cleanDriveUrl);
+  const driveMemoryPairs = buildMemoryPairsFromDrivePhotos(drivePhotos);
+  const drivePuzzles = buildPuzzlesFromDrivePhotos(drivePhotos);
 
   let content: GameContent = {
     ...DEFAULT_GAME_CONTENT,
     driveFolderUrl: cleanDriveUrl,
     sheetsUrl: cleanSheetsUrl,
     spotifyUrl: cleanSpotifyUrl,
+    ...(driveMemoryPairs.length > 0 ? { memoryPairs: driveMemoryPairs } : {}),
+    ...(drivePuzzles.length > 0 ? { puzzles: drivePuzzles } : {}),
   };
 
   if (cleanSheetsUrl) {
@@ -927,7 +1153,7 @@ export async function loadContentFromGoogleDrive(
           content = parseSheetRowsIntoContent(rows, content);
         }
       } catch {
-        // Offline, private sheet, or CORS fallback: retain built-in DEFAULT_GAME_CONTENT cleanly
+        // Offline, private sheet, or CORS fallback: retain Drive photos + built-in content cleanly
       }
     }
   }

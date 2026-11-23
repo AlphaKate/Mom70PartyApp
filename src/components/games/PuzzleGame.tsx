@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Check, Eye, EyeOff, Hash, Pause, Sparkles, Trophy } from 'lucide-react';
 import { Language, PuzzleItem } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
-import { soundEffects } from '../../services/contentService';
+import { getDriveImageEndpoints, soundEffects } from '../../services/contentService';
 
 interface PuzzleGameProps {
   puzzle: PuzzleItem;
@@ -98,8 +98,13 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   const [bestCorrectCount, setBestCorrectCount] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [showNumbers, setShowNumbers] = useState(false);
+  const [endpointIdx, setEndpointIdx] = useState(0);
 
   const prevKeyRef = useRef<string>(puzzleKey);
+
+  useEffect(() => {
+    setEndpointIdx(0);
+  }, [puzzle.imageUrl]);
 
   useEffect(() => {
     if (prevKeyRef.current !== puzzleKey) {
@@ -119,10 +124,15 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   const progressPercent = totalTiles > 0 ? Math.round((correctCount / totalTiles) * 100) : 100;
   const isSolved = totalTiles > 0 && correctCount === totalTiles;
 
-  const safeCssUrl = useMemo(() => {
-    const sanitized = puzzle.imageUrl.replace(/"/g, '%22');
-    return `url("${sanitized}")`;
-  }, [puzzle.imageUrl]);
+  const imageEndpoints = useMemo(
+    () => getDriveImageEndpoints(puzzle.imageUrl),
+    [puzzle.imageUrl]
+  );
+  const activeImageUrl = imageEndpoints[endpointIdx] ?? puzzle.imageUrl;
+
+  const handleImageError = () => {
+    setEndpointIdx((prev) => (prev < imageEndpoints.length - 1 ? prev + 1 : prev));
+  };
 
   const handleTileTap = (slotIndex: number) => {
     if (isPaused || isSolved) return;
@@ -245,12 +255,23 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
         </div>
       </div>
 
+      {/* Hidden preloader to advance Google Drive image endpoints on error */}
+      <img
+        src={activeImageUrl}
+        referrerPolicy="no-referrer"
+        alt=""
+        onError={handleImageError}
+        className="hidden"
+      />
+
       {/* Reference Preview Drawer */}
       {showPreview && !isSolved && (
         <div className="rounded-3xl bg-white p-3 border-2 border-rose-300 shadow-lg max-w-xs mx-auto">
           <img
-            src={puzzle.imageUrl}
+            src={activeImageUrl}
+            referrerPolicy="no-referrer"
             alt={puzzle.title[lang]}
+            onError={handleImageError}
             className="w-full aspect-square object-cover rounded-2xl"
           />
         </div>
@@ -277,8 +298,6 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
             {board.map((tileId, slotIndex) => {
               const origRow = Math.floor(tileId / gridSize);
               const origCol = tileId % gridSize;
-              const bgX = gridSize > 1 ? (origCol / (gridSize - 1)) * 100 : 0;
-              const bgY = gridSize > 1 ? (origRow / (gridSize - 1)) * 100 : 0;
               const isCorrect = tileId === slotIndex;
               const isSelected = selectedSlot === slotIndex;
 
@@ -289,7 +308,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
                   onClick={() => handleTileTap(slotIndex)}
                   disabled={isPaused || isSolved}
                   aria-label={`Tile ${tileId + 1} at position ${slotIndex + 1}`}
-                  className={`relative w-full h-full touch-manipulation transition-all duration-200 focus:outline-none ${
+                  className={`relative w-full h-full overflow-hidden touch-manipulation transition-all duration-200 focus:outline-none ${
                     isSolved
                       ? 'border-0 rounded-none'
                       : isSelected
@@ -298,20 +317,28 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
                       ? 'rounded-xl border-4 border-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.4)]'
                       : 'rounded-xl border-2 border-slate-200 hover:border-amber-300 active:scale-95'
                   }`}
-                  style={{
-                    backgroundImage: safeCssUrl,
-                    backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
-                    backgroundPosition: `${bgX}% ${bgY}%`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
                 >
+                  <img
+                    src={activeImageUrl}
+                    referrerPolicy="no-referrer"
+                    alt=""
+                    draggable={false}
+                    className="absolute object-cover pointer-events-none select-none"
+                    style={{
+                      width: `${gridSize * 100}%`,
+                      height: `${gridSize * 100}%`,
+                      maxWidth: 'none',
+                      left: `${-origCol * 100}%`,
+                      top: `${-origRow * 100}%`,
+                    }}
+                  />
                   {isCorrect && !isSolved && (
-                    <span className="absolute top-1 right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
+                    <span className="absolute top-1 right-1 z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
                     </span>
                   )}
                   {showNumbers && !isSolved && (
-                    <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-slate-900/75 text-white text-xs font-extrabold">
+                    <span className="absolute bottom-1 left-1 z-10 px-1.5 py-0.5 rounded-md bg-slate-900/75 text-white text-xs font-extrabold">
                       {tileId + 1}
                     </span>
                   )}

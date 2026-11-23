@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ImageOff, Pause, Sparkles, Trophy } from 'lucide-react';
 import { Language, MemoryPair } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
-import { soundEffects } from '../../services/contentService';
+import { getDriveImageEndpoints, soundEffects } from '../../services/contentService';
 
 interface MemoryGameProps {
   pairs: MemoryPair[];
@@ -84,6 +84,7 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   const [moves, setMoves] = useState(0);
   const [isChecking, setIsChecking] = useState(false);
   const [lastMatchedText, setLastMatchedText] = useState<string | null>(null);
+  const [endpointIndices, setEndpointIndices] = useState<Record<string, number>>({});
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   const mismatchTimerRef = useRef<number | null>(null);
@@ -107,6 +108,8 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
       setMoves(0);
       setIsChecking(false);
       setLastMatchedText(null);
+      setEndpointIndices({});
+      setFailedImages({});
     }
   }, [pairsKey]);
 
@@ -263,11 +266,14 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
             const pair = pairMap.get(card.pairId);
             const isMatched = matchedPairIds.includes(card.pairId);
             const isFlipped = flippedUids.includes(card.uid) || isMatched;
-            const imageUrl = pair
+            const rawImageUrl = pair
               ? card.side === 'A'
                 ? pair.imageA
                 : pair.imageB
               : '';
+            const endpoints = rawImageUrl ? getDriveImageEndpoints(rawImageUrl) : [];
+            const endpointIdx = endpointIndices[card.uid] ?? 0;
+            const activeImageUrl = endpoints[endpointIdx] ?? rawImageUrl;
             const label = pair
               ? card.side === 'A'
                 ? pair.labelA[lang]
@@ -319,15 +325,23 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
                     }`}
                   >
                     <div className="relative flex-1 min-h-0 bg-amber-50/70 overflow-hidden flex items-center justify-center p-1">
-                      {imageUrl && !imgFailed ? (
+                      {activeImageUrl && !imgFailed ? (
                         <img
-                          src={imageUrl}
+                          src={activeImageUrl}
+                          referrerPolicy="no-referrer"
                           alt={label}
                           draggable={false}
-                          onError={() =>
-                            setFailedImages((prev) => ({ ...prev, [card.uid]: true }))
-                          }
-                          className="w-full h-full object-contain rounded-lg"
+                          onError={() => {
+                            if (endpointIdx < endpoints.length - 1) {
+                              setEndpointIndices((prev) => ({
+                                ...prev,
+                                [card.uid]: endpointIdx + 1,
+                              }));
+                            } else {
+                              setFailedImages((prev) => ({ ...prev, [card.uid]: true }));
+                            }
+                          }}
+                          className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
                         <div className="flex flex-col items-center justify-center text-amber-600 p-2">

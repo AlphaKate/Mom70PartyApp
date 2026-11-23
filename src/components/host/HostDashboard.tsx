@@ -12,6 +12,7 @@ import {
   FolderOpen,
   HelpCircle,
   Home,
+  Image as ImageIcon,
   Medal,
   Music,
   PartyPopper,
@@ -34,7 +35,9 @@ import { useSettings } from '../../context/SettingsContext';
 import { TranslationKey } from '../../i18n/translations';
 import {
   DEFAULT_GAME_CONTENT,
+  getDriveImageEndpoints,
   loadContentFromGoogleDrive,
+  resolveDrivePhotos,
   soundEffects,
 } from '../../services/contentService';
 import { HostConnectionStatus, HostP2PManager } from '../../services/p2pService';
@@ -145,6 +148,34 @@ function firePartyConfetti(): void {
   }
 }
 
+const DriveImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+}> = ({ src, alt, className = '' }) => {
+  const endpoints = useMemo(() => getDriveImageEndpoints(src), [src]);
+  const [endpointIdx, setEndpointIdx] = useState(0);
+
+  useEffect(() => {
+    setEndpointIdx(0);
+  }, [src]);
+
+  const activeSrc = endpoints[endpointIdx] ?? src;
+  return (
+    <img
+      src={activeSrc}
+      referrerPolicy="no-referrer"
+      alt={alt}
+      onError={() => {
+        if (endpointIdx < endpoints.length - 1) {
+          setEndpointIdx((prev) => prev + 1);
+        }
+      }}
+      className={className}
+    />
+  );
+};
+
 export const HostDashboard: React.FC<HostDashboardProps> = ({
   initialRoomCode,
   compact = false,
@@ -169,6 +200,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
   const [spotifyUrlInput, setSpotifyUrlInput] = useState('');
   const [customMomName, setCustomMomName] = useState('');
   const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [isPreviewingDrive, setIsPreviewingDrive] = useState(false);
+  const [previewDrivePhotos, setPreviewDrivePhotos] = useState<string[]>([]);
+  const [drivePreviewChecked, setDrivePreviewChecked] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<HostConnectionStatus>('connecting');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -467,6 +501,20 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
     return () => window.clearInterval(timer);
   }, [gameState.phase, gameState.isPaused, gameState.players]);
+
+  const handlePreviewDrivePhotos = async () => {
+    setIsPreviewingDrive(true);
+    try {
+      const photos = await resolveDrivePhotos(driveUrlInput);
+      setPreviewDrivePhotos(photos);
+      setDrivePreviewChecked(true);
+      if (photos.length > 0) {
+        soundEffects.playSuccess(isMuted);
+      }
+    } finally {
+      setIsPreviewingDrive(false);
+    }
+  };
 
   const handleOpenLobby = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -775,21 +823,68 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               </div>
             </div>
 
-            {/* Google Drive Folder */}
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800">
-                <FolderOpen className="w-4 h-4 text-sky-600" aria-hidden="true" />
-                <span>{t('driveFolderLabel')}</span>
-              </label>
-              <input
-                type="url"
+            {/* Google Drive Folder or Photo Links */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800">
+                  <FolderOpen className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                  <span>{t('driveFolderLabel')}</span>
+                </label>
+
+                <button
+                  type="button"
+                  disabled={!driveUrlInput.trim() || isPreviewingDrive}
+                  onClick={handlePreviewDrivePhotos}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 disabled:opacity-45 border border-sky-300 text-sky-900 font-extrabold text-xs sm:text-sm transition-colors"
+                >
+                  <ImageIcon className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                  <span>
+                    {isPreviewingDrive
+                      ? t('previewingDrivePhotos')
+                      : t('previewDrivePhotosBtn')}
+                  </span>
+                </button>
+              </div>
+
+              <textarea
+                rows={2}
                 dir="ltr"
                 value={driveUrlInput}
-                onChange={(e) => setDriveUrlInput(e.target.value)}
+                onChange={(e) => {
+                  setDriveUrlInput(e.target.value);
+                  if (drivePreviewChecked) {
+                    setDrivePreviewChecked(false);
+                  }
+                }}
                 placeholder={t('driveFolderPlaceholder')}
-                className="w-full rounded-2xl border-2 border-sky-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 px-4 py-3 text-base bg-white outline-none transition-all"
+                className="w-full rounded-2xl border-2 border-sky-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 px-4 py-2.5 text-sm sm:text-base bg-white outline-none transition-all resize-y"
               />
               <p className="text-xs text-slate-500">{t('driveFolderHint')}</p>
+
+              {drivePreviewChecked && previewDrivePhotos.length > 0 && (
+                <div className="rounded-2xl bg-sky-50 border border-sky-200 p-3 space-y-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
+                    <span>{t('drivePhotosLoadedBadge', { count: previewDrivePhotos.length })}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {previewDrivePhotos.slice(0, 12).map((photoUrl, idx) => (
+                      <DriveImage
+                        key={photoUrl}
+                        src={photoUrl}
+                        alt={`Drive #${idx + 1}`}
+                        className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm bg-white"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {drivePreviewChecked && previewDrivePhotos.length === 0 && driveUrlInput.trim() && (
+                <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-amber-900">
+                  {t('drivePhotosNotFoundNote')}
+                </div>
+              )}
             </div>
 
             {/* Google Sheets Questions */}
@@ -1119,18 +1214,54 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 <p className="text-sm font-bold text-slate-600">{t('liveRace')}</p>
               </div>
               {gameState.phase === 'PUZZLE' && activePuzzle && (
-                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-1.5">
-                  <img
+                <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-3.5 py-2 shadow-sm">
+                  <DriveImage
                     src={activePuzzle.imageUrl}
-                    alt={activePuzzle.title[lang]}
-                    className="w-10 h-10 rounded-lg object-cover border border-amber-300"
+                    alt={activePuzzle.title[lang] || activePuzzle.title.en}
+                    className="w-12 h-12 rounded-xl object-cover border border-amber-300 bg-white"
                   />
                   <span className="text-sm font-extrabold text-amber-900">
-                    {activePuzzle.title[lang]}
+                    {activePuzzle.title[lang] || activePuzzle.title.en}
                   </span>
                 </div>
               )}
             </div>
+
+            {gameState.phase === 'MEMORY' && gameState.content.memoryPairs.length > 0 && (
+              <div className="rounded-2xl bg-rose-50/70 border border-rose-200 p-3 space-y-2">
+                <p className="text-xs font-extrabold text-rose-800">{t('activePhotosGallery')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {gameState.content.memoryPairs.map((pair) => (
+                    <DriveImage
+                      key={pair.id}
+                      src={pair.imageA}
+                      alt={pair.labelA[lang] || pair.labelA.en}
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border-2 border-white shadow-sm bg-white"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {gameState.phase === 'PUZZLE' && gameState.content.puzzles.length > 1 && (
+              <div className="rounded-2xl bg-amber-50/70 border border-amber-200 p-3 space-y-2">
+                <p className="text-xs font-extrabold text-amber-900">{t('activePhotosGallery')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {gameState.content.puzzles.map((puz, idx) => (
+                    <DriveImage
+                      key={puz.id}
+                      src={puz.imageUrl}
+                      alt={puz.title[lang] || puz.title.en}
+                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover bg-white transition-all ${
+                        idx === gameState.currentQuestionIndex % gameState.content.puzzles.length
+                          ? 'border-2 border-rose-500 ring-2 ring-rose-300 scale-105 shadow-md'
+                          : 'border-2 border-white opacity-75'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {racePlayers.length === 0 ? (
               <p className="text-center py-8 text-slate-500 font-bold">{t('noPlayersYet')}</p>
@@ -1229,9 +1360,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
             {activeQuestion.imageUrl && (
               <div className="rounded-2xl overflow-hidden border border-sky-200 max-h-60 flex justify-center bg-sky-50">
-                <img
+                <DriveImage
                   src={activeQuestion.imageUrl}
-                  alt={activeQuestion.question[lang]}
+                  alt={activeQuestion.question[lang] || activeQuestion.question.en}
                   className="max-h-60 object-contain"
                 />
               </div>
