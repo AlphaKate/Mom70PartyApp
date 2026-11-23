@@ -87,23 +87,18 @@ npm run preview
 
 ---
 
-## 🌐 פריסה חינמית לענן (Vercel / GitHub Pages)
+## 🌐 פריסה חינמית לענן (GitHub Pages)
 
-פריסת האפליקציה באינטרנט מאפשרת לכל האורחים לסרוק את ה-QR מהנייד (גם ב-4G/5G ללא תלות ב-Wi-Fi הביתי).
+המאגר הוגדר לפריסה אוטומטית ישירה ל-**GitHub Pages** באמצעות **GitHub Actions**:
+הכתובת הציבורית של האפליקציה למשתתפים:
+👉 **`https://alphakate.github.io/Mom70PartyApp/`**
 
-### אפשרות א': Vercel (מומלץ ומהיר — דקה אחת)
-1. היכנסו ל-[vercel.com](https://vercel.com) והתחברו עם חשבון GitHub.
-2. לחצו **Add New → Project** ובחרו את המאגר `AlphaKate/Mom70PartyApp`.
-3. ודאו שההגדרות הן:
-   - **Framework Preset:** `Vite`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-4. לחצו **Deploy** — תקבלו כתובת HTTPS מוכנה לשיתוף בטלוויזיה ובניידים.
-
-### אפשרות ב': GitHub Pages
-קובץ `vite.config.ts` כבר מוגדר עם `base: './'`, ולכן האפליקציה עובדת חלק מתחת לכל נתיב ב-GitHub Pages:
-1. הריצו `npm run build` (יוצר את תיקיית `dist/`).
-2. הגדירו במאגר GitHub תחת **Settings → Pages** פריסה באמצעות GitHub Actions (או פרסמו את תוכן תיקיית `dist/` לענף `gh-pages`).
+### הפעלה חד-פעמית ב-GitHub (שלב יחיד):
+1. היכנסו למאגר ב-GitHub: **[https://github.com/AlphaKate/Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp)**
+2. לחצו על לשונית **Settings** (הגדרות המאגר).
+3. בתפריט הצדדי לחצו על **Pages**.
+4. תחת **Build and deployment** ← **Source**, בחרו: **`GitHub Actions`**.
+5. זהו! בכל עדכון ו-push לענף `main` ה-Action יבנה ויפרוס את האתר אוטומטית תוך כדקה.
 
 ---
 
