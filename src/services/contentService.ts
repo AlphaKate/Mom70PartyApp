@@ -748,6 +748,14 @@ export function extractDriveImagesFromText(rawInput: string): string[] {
       continue;
     }
 
+    if (token.startsWith('data:image/')) {
+      if (!seen.has(token)) {
+        seen.add(token);
+        results.push(token);
+      }
+      continue;
+    }
+
     if (
       /^https?:\/\/\S+/i.test(token) &&
       (/\.(?:png|jpe?g|webp|gif|avif|svg)(?:[?#].*)?$/i.test(token) ||
@@ -763,37 +771,89 @@ export function extractDriveImagesFromText(rawInput: string): string[] {
   return results;
 }
 
-function parseDriveFolderHtmlForImages(html: string, folderId: string): string[] {
-  const seen = new Set<string>();
-  const urls: string[] = [];
+export interface DriveFolderParseResult {
+  imageUrls: string[];
+  subfolderIds: string[];
+}
 
-  const addId = (id: string) => {
-    if (!id || id === folderId) return;
-    const url = `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
-    if (!seen.has(url)) {
-      seen.add(url);
-      urls.push(url);
-    }
-  };
+export function parseDriveFolderHtml(html: string, currentFolderId: string): DriveFolderParseResult {
+  const seenImages = new Set<string>();
+  const seenFolders = new Set<string>();
+  const imageUrls: string[] = [];
+  const subfolderIds: string[] = [];
 
-  const patterns = [
-    /id="entry-([a-zA-Z0-9_-]{15,})"/g,
-    /\/file\/d\/([a-zA-Z0-9_-]{15,})/g,
-    /data-id="([a-zA-Z0-9_-]{15,})"/g,
-  ];
-
-  for (const regex of patterns) {
-    for (const match of html.matchAll(regex)) {
-      addId(match[1]);
+  // Match subfolder links
+  const folderRegex = /drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]{15,})/g;
+  for (const match of html.matchAll(folderRegex)) {
+    const fId = match[1];
+    if (fId && fId !== currentFolderId && !seenFolders.has(fId)) {
+      seenFolders.add(fId);
+      subfolderIds.push(fId);
     }
   }
 
-  return urls;
+  // Match direct file links
+  const fileRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]{15,})/g;
+  for (const match of html.matchAll(fileRegex)) {
+    const fileId = match[1];
+    if (fileId && fileId !== currentFolderId && !seenFolders.has(fileId)) {
+      const url = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+      if (!seenImages.has(url)) {
+        seenImages.add(url);
+        imageUrls.push(url);
+      }
+    }
+  }
+
+  // Match flip-entry blocks
+  const entryBlockRegex = /<div class="flip-entry"[^>]*id="entry-([a-zA-Z0-9_-]{15,})"[^>]*>([\s\S]*?)<\/div><\/div><\/div>/g;
+  for (const match of html.matchAll(entryBlockRegex)) {
+    const entryId = match[1];
+    const blockContent = match[2];
+    if (entryId === currentFolderId) continue;
+
+    const isFolder = /drive-sprite-folder|aria-label="Folder"|\/folders\//i.test(blockContent);
+    if (isFolder) {
+      if (!seenFolders.has(entryId)) {
+        seenFolders.add(entryId);
+        subfolderIds.push(entryId);
+      }
+    } else {
+      if (!seenFolders.has(entryId)) {
+        const url = `https://drive.google.com/thumbnail?id=${entryId}&sz=w1200`;
+        if (!seenImages.has(url)) {
+          seenImages.add(url);
+          imageUrls.push(url);
+        }
+      }
+    }
+  }
+
+  return { imageUrls, subfolderIds };
 }
 
 export async function discoverDriveFolderImages(folderId: string): Promise<string[]> {
   if (!folderId) return [];
 
+  // 1. Try local dev/preview server proxy first (Vite middleware)
+  try {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : undefined;
+    const proxyRes = await fetch(`/api/drive-folder?id=${encodeURIComponent(folderId)}`, {
+      ...(controller ? { signal: controller.signal } : {}),
+    });
+    if (timeoutId) clearTimeout(timeoutId);
+    if (proxyRes.ok) {
+      const data = await proxyRes.json();
+      if (data && Array.isArray(data.images) && data.images.length > 0) {
+        return data.images;
+      }
+    }
+  } catch {
+    // Proceed to browser fallbacks if dev proxy is unavailable (e.g. static hosting)
+  }
+
+  // 2. Fallbacks for static client builds
   const embeddedUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
   const candidates = [
     embeddedUrl,
@@ -804,7 +864,7 @@ export async function discoverDriveFolderImages(folderId: string): Promise<strin
   for (const candidateUrl of candidates) {
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutId = controller
-      ? setTimeout(() => controller.abort(), 4500)
+      ? setTimeout(() => controller.abort(), 3500)
       : undefined;
 
     try {
@@ -815,9 +875,28 @@ export async function discoverDriveFolderImages(folderId: string): Promise<strin
       if (!response.ok) continue;
 
       const html = await response.text();
-      const discovered = parseDriveFolderHtmlForImages(html, folderId);
-      if (discovered.length > 0) {
-        return discovered;
+      const parsed = parseDriveFolderHtml(html, folderId);
+      const allFound = [...parsed.imageUrls];
+
+      // If subfolders were found (e.g. photos/), check subfolders as well
+      if (allFound.length === 0 && parsed.subfolderIds.length > 0) {
+        for (const subId of parsed.subfolderIds.slice(0, 3)) {
+          const subUrl = `https://drive.google.com/embeddedfolderview?id=${subId}#grid`;
+          try {
+            const subRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(subUrl)}`, {
+              mode: 'cors',
+            });
+            if (subRes.ok) {
+              const subHtml = await subRes.text();
+              const subParsed = parseDriveFolderHtml(subHtml, subId);
+              allFound.push(...subParsed.imageUrls);
+            }
+          } catch {}
+        }
+      }
+
+      if (allFound.length > 0) {
+        return allFound;
       }
     } catch {
       // Try next fallback endpoint
@@ -1120,13 +1199,17 @@ export async function resolveDrivePhotos(driveInput: string): Promise<string[]> 
 export async function loadContentFromGoogleDrive(
   driveFolderUrl: string,
   sheetsUrl?: string,
-  spotifyUrl?: string
+  spotifyUrl?: string,
+  preResolvedPhotos?: string[]
 ): Promise<GameContent> {
   const cleanDriveUrl = driveFolderUrl.trim();
   const cleanSheetsUrl = (sheetsUrl ?? '').trim();
   const cleanSpotifyUrl = (spotifyUrl ?? '').trim() || DEFAULT_GAME_CONTENT.spotifyUrl;
 
-  const drivePhotos = await resolveDrivePhotos(cleanDriveUrl);
+  const drivePhotos =
+    preResolvedPhotos && preResolvedPhotos.length > 0
+      ? preResolvedPhotos
+      : await resolveDrivePhotos(cleanDriveUrl);
   const driveMemoryPairs = buildMemoryPairsFromDrivePhotos(drivePhotos);
   const drivePuzzles = buildPuzzlesFromDrivePhotos(drivePhotos);
 

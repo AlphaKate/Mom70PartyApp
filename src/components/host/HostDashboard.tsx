@@ -22,7 +22,9 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
+  Trash2,
   Trophy,
+  Upload,
   UserPlus,
   Users,
   Wifi,
@@ -229,6 +231,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
   const [isPreviewingDrive, setIsPreviewingDrive] = useState(false);
   const [previewDrivePhotos, setPreviewDrivePhotos] = useState<string[]>([]);
   const [drivePreviewChecked, setDrivePreviewChecked] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<HostConnectionStatus>('connecting');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -542,6 +545,40 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
     }
   };
 
+  const handleLocalFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const filePromises = Array.from(files).map((file) => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            resolve(reader.result);
+          } else {
+            resolve('');
+          }
+        };
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const base64List = (await Promise.all(filePromises)).filter(Boolean);
+    if (base64List.length > 0) {
+      setPreviewDrivePhotos((prev) => Array.from(new Set([...prev, ...base64List])));
+      setDrivePreviewChecked(true);
+      soundEffects.playSuccess(isMuted);
+    }
+    e.target.value = '';
+  };
+
+  const handleClearPhotos = () => {
+    setPreviewDrivePhotos([]);
+    setDriveUrlInput('');
+    setDrivePreviewChecked(false);
+  };
+
   const handleOpenLobby = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoadingContent(true);
@@ -549,7 +586,8 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       const loaded = await loadContentFromGoogleDrive(
         driveUrlInput,
         sheetsUrlInput,
-        spotifyUrlInput
+        spotifyUrlInput,
+        previewDrivePhotos
       );
       const trimmedMom = customMomName.trim();
       const finalContent = trimmedMom
@@ -857,19 +895,38 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                   <span>{t('driveFolderLabel')}</span>
                 </label>
 
-                <button
-                  type="button"
-                  disabled={!driveUrlInput.trim() || isPreviewingDrive}
-                  onClick={handlePreviewDrivePhotos}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 disabled:opacity-45 border border-sky-300 text-sky-900 font-extrabold text-xs sm:text-sm transition-colors"
-                >
-                  <ImageIcon className="w-4 h-4 text-sky-600" aria-hidden="true" />
-                  <span>
-                    {isPreviewingDrive
-                      ? t('previewingDrivePhotos')
-                      : t('previewDrivePhotosBtn')}
-                  </span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleLocalFilesUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-900 font-extrabold text-xs sm:text-sm transition-colors"
+                  >
+                    <Upload className="w-4 h-4 text-purple-600" aria-hidden="true" />
+                    <span>{t('uploadLocalPhotosBtn')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!driveUrlInput.trim() || isPreviewingDrive}
+                    onClick={handlePreviewDrivePhotos}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 disabled:opacity-45 border border-sky-300 text-sky-900 font-extrabold text-xs sm:text-sm transition-colors"
+                  >
+                    <ImageIcon className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                    <span>
+                      {isPreviewingDrive
+                        ? t('previewingDrivePhotos')
+                        : t('previewDrivePhotosBtn')}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               <textarea
@@ -887,11 +944,21 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               />
               <p className="text-xs text-slate-500">{t('driveFolderHint')}</p>
 
-              {drivePreviewChecked && previewDrivePhotos.length > 0 && (
+              {previewDrivePhotos.length > 0 && (
                 <div className="rounded-2xl bg-sky-50 border border-sky-200 p-3 space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
-                    <span>{t('drivePhotosLoadedBadge', { count: previewDrivePhotos.length })}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
+                      <span>{t('drivePhotosLoadedBadge', { count: previewDrivePhotos.length })}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearPhotos}
+                      className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-800 font-bold px-2 py-0.5 rounded-lg hover:bg-rose-50 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>{t('clearPhotosBtn')}</span>
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {previewDrivePhotos.slice(0, 12).map((photoUrl, idx) => (
