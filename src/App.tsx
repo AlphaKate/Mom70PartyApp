@@ -9,6 +9,7 @@ import {
   Tv,
 } from 'lucide-react';
 import { AccessibilityBar } from './components/common/AccessibilityBar';
+import { MomCelebrationIcon } from './components/common/MomCelebrationIcon';
 import { HostDashboard } from './components/host/HostDashboard';
 import { PlayerClient } from './components/player/PlayerClient';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
@@ -168,11 +169,9 @@ export function App() {
             <span>{t('birthdayBadge')}</span>
           </div>
 
-          <img
-            src="/icon.svg"
-            alt="Mom v7.0"
-            className="w-24 h-24 rounded-3xl shadow-xl animate-float-gentle mx-auto border-4 border-white bg-rose-500 object-cover"
-          />
+          <div className="flex justify-center py-1">
+            <MomCelebrationIcon className="w-28 h-28 sm:w-32 sm:h-32 mx-auto animate-float-gentle drop-shadow-xl" />
+          </div>
 
           <h1 className="text-4xl sm:text-6xl font-black text-rose-900 leading-tight tracking-tight">
             {t('appTitle')}
