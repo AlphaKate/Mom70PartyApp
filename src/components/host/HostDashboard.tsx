@@ -31,6 +31,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { AvatarDisplay } from '../common/AvatarDisplay';
 import { useSettings } from '../../context/SettingsContext';
 import { TranslationKey } from '../../i18n/translations';
 import {
@@ -73,7 +74,32 @@ const PHASE_LABEL_KEYS: Record<GamePhase, TranslationKey> = {
   FINALE: 'phaseFinale',
 };
 
-const BOT_AVATARS = ['🎂', '💐', '🌟', '🥳', '❤️', '👑', '🎶', '🦋'];
+const BOT_AVATARS = [
+  'fairy_nap',
+  'hero_wonder_savta',
+  'animal_cat_boss',
+  'ussr_mishka_80',
+  'fairy_espresso',
+  'hero_borscht',
+  'animal_doge_party',
+  'ussr_gena_accordion',
+  'fairy_carb',
+  'hero_laundry',
+  'animal_fox_schemer',
+  'ussr_babushka_pin',
+  'fairy_told_you',
+  'hero_couch',
+  'animal_cake_bear',
+  'ussr_wolf_pogodi',
+  'fairy_cash',
+  'hero_hug',
+  'animal_lazy_panda',
+  'ussr_cheburashka',
+  'fairy_cleaner',
+  'hero_uber',
+  'animal_drama_llama',
+  'ussr_cosmonaut',
+];
 
 const BOT_WISHES: Record<Language, string[]> = {
   he: [
@@ -667,8 +693,8 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
   };
 
   const joinUrl = useMemo(() => {
-    if (typeof window === 'undefined') return `?room=${gameState.roomCode}`;
-    return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}`;
+    if (typeof window === 'undefined') return `?room=${gameState.roomCode}&v=7.0`;
+    return `${window.location.origin}${window.location.pathname}?room=${gameState.roomCode}&v=7.0`;
   }, [gameState.roomCode]);
 
   const handleCopyJoinLink = async () => {
@@ -1176,7 +1202,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       key={player.id}
                       className="rounded-2xl bg-gradient-to-br from-white to-rose-50/70 border-2 border-rose-200 p-3 flex items-center gap-2.5 shadow-sm"
                     >
-                      <span className="text-2xl shrink-0">{player.avatar}</span>
+                      <AvatarDisplay
+                        avatar={player.avatar}
+                        className="w-8 h-8 shrink-0 drop-shadow-sm"
+                      />
                       <div className="min-w-0">
                         <p className="font-extrabold text-slate-900 truncate">{player.name}</p>
                         <p className="text-[11px] font-bold text-emerald-600">
@@ -1274,7 +1303,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-2xl">{player.avatar}</span>
+                        <AvatarDisplay
+                          avatar={player.avatar}
+                          className="w-8 h-8 shrink-0 drop-shadow-sm"
+                        />
                         <span className="font-extrabold text-slate-900 truncate">
                           {player.name}
                         </span>
@@ -1327,7 +1359,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                     <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
-                    <span className="text-xl shrink-0">{player.avatar}</span>
+                    <AvatarDisplay
+                      avatar={player.avatar}
+                      className="w-7 h-7 shrink-0 drop-shadow-sm"
+                    />
                     <span className="font-extrabold text-slate-900 truncate">{player.name}</span>
                   </div>
                   <span className="font-black text-rose-700 text-sm shrink-0">
@@ -1468,7 +1503,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
-                      <span className="text-xl shrink-0">{player.avatar}</span>
+                      <AvatarDisplay
+                      avatar={player.avatar}
+                      className="w-7 h-7 shrink-0 drop-shadow-sm"
+                    />
                       <span className="font-extrabold text-slate-900 truncate">
                         {player.name}
                       </span>
@@ -1564,7 +1602,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       <span className="text-xs font-black uppercase text-slate-600">
                         {t('place2')}
                       </span>
-                      <div className="text-4xl">{sortedLeaderboard[1].avatar}</div>
+                      <div className="flex justify-center py-1">
+                        <AvatarDisplay avatar={sortedLeaderboard[1].avatar} className="w-16 h-16 drop-shadow-md" />
+                      </div>
                       <p className="text-lg font-black text-slate-900 truncate">
                         {sortedLeaderboard[1].name}
                       </p>
@@ -1583,7 +1623,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       <span className="text-sm font-black uppercase text-amber-900">
                         {t('place1')}
                       </span>
-                      <div className="text-5xl">{sortedLeaderboard[0].avatar}</div>
+                      <div className="flex justify-center py-1">
+                        <AvatarDisplay avatar={sortedLeaderboard[0].avatar} className="w-20 h-20 drop-shadow-xl" />
+                      </div>
                       <p className="text-2xl font-black text-slate-900 truncate">
                         {sortedLeaderboard[0].name}
                       </p>
@@ -1602,7 +1644,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       <span className="text-xs font-black uppercase text-orange-800">
                         {t('place3')}
                       </span>
-                      <div className="text-4xl">{sortedLeaderboard[2].avatar}</div>
+                      <div className="flex justify-center py-1">
+                        <AvatarDisplay avatar={sortedLeaderboard[2].avatar} className="w-14 h-14 drop-shadow-md" />
+                      </div>
                       <p className="text-lg font-black text-slate-900 truncate">
                         {sortedLeaderboard[2].name}
                       </p>
@@ -1629,7 +1673,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                         <span className="w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-black flex items-center justify-center shrink-0">
                           {idx + 1}
                         </span>
-                        <span className="text-xl">{player.avatar}</span>
+                        <AvatarDisplay avatar={player.avatar} className="w-7 h-7 shrink-0" />
                         <span className="font-bold text-slate-900 truncate">{player.name}</span>
                       </div>
                       <span className="font-black text-rose-700 text-sm shrink-0">

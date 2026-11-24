@@ -1,6 +1,7 @@
 export type Language = 'he' | 'ru' | 'en';
 
-export type FontScale = 'normal' | 'large' | 'huge';
+export type FontScale = 'small' | 'normal' | 'large' | 'huge';
+export type AppTheme = 'light' | 'dark' | 'auto';
 
 export type GamePhase =
   | 'SETUP'

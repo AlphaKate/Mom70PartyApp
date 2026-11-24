@@ -18,6 +18,13 @@ import { soundEffects } from '../../services/contentService';
 import { PlayerConnectionStatus, PlayerP2PClient } from '../../services/p2pService';
 import { GameState, Player } from '../../types/game';
 import { AccessibilityBar } from '../common/AccessibilityBar';
+import { AvatarDisplay } from '../common/AvatarDisplay';
+import {
+  AVATAR_CATEGORIES,
+  AvatarCategoryKey,
+  DEFAULT_AVATAR,
+  getAvatarDisplayName,
+} from '../../constants/avatars';
 import {
   MemoryGame,
   PlayerWishInput,
@@ -31,8 +38,6 @@ export interface PlayerClientProps {
   compact?: boolean;
   onBackHome?: () => void;
 }
-
-const AVATAR_CHOICES = ['🎂', '💐', '🥳', '🌟', '❤️', '👑', '🎶', '🦋', '🥂', '🧸', '🌸', '🚀'];
 
 function readRoomFromUrl(): string {
   if (typeof window === 'undefined') return '';
@@ -59,7 +64,9 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
     return seeded.replace(/[^A-Z0-9_-]/g, '');
   });
   const [nickname, setNickname] = useState('');
-  const [avatar, setAvatar] = useState(AVATAR_CHOICES[0]);
+  const [avatarCategory, setAvatarCategory] = useState<AvatarCategoryKey>('fairies');
+  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
+  const [isChangingLobbyAvatar, setIsChangingLobbyAvatar] = useState(false);
   const [formError, setFormError] = useState(false);
 
   const [hasJoined, setHasJoined] = useState(false);
@@ -73,9 +80,28 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const joinedIdentityRef = useRef<{ id: string; name: string; avatar: string }>({
     id: playerId,
     name: '',
-    avatar: AVATAR_CHOICES[0],
+    avatar: DEFAULT_AVATAR,
   });
   const finalePoppedRef = useRef(false);
+
+  const currentCategoryObj = useMemo(
+    () => AVATAR_CATEGORIES.find((c) => c.key === avatarCategory) ?? AVATAR_CATEGORIES[0],
+    [avatarCategory]
+  );
+
+  const handleUpdateLobbyAvatar = (newEmoji: string) => {
+    soundEffects.playTick(isMuted);
+    setAvatar(newEmoji);
+    joinedIdentityRef.current.avatar = newEmoji;
+    clientRef.current?.send({
+      type: 'PLAYER_JOIN',
+      payload: {
+        id: playerId,
+        name: joinedIdentityRef.current.name,
+        avatar: newEmoji,
+      },
+    });
+  };
 
   useEffect(() => {
     if (initialRoomCode && !hasJoined) {
@@ -339,32 +365,86 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-extrabold text-slate-800">
-              {t('chooseAvatarLabel')}
-            </label>
-            <div className="grid grid-cols-6 gap-2">
-              {AVATAR_CHOICES.map((emoji) => {
-                const selected = avatar === emoji;
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-extrabold text-slate-800">
+                {t('chooseAvatarLabel')}
+              </label>
+              <span className="text-xs font-bold text-rose-600">
+                {currentCategoryObj.labels[lang] || currentCategoryObj.labels.he}
+              </span>
+            </div>
+
+            {/* Category tabs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-amber-100/70 rounded-2xl">
+              {AVATAR_CATEGORIES.map((cat) => {
+                const isCatActive = avatarCategory === cat.key;
                 return (
                   <button
-                    key={emoji}
+                    key={cat.key}
                     type="button"
                     onClick={() => {
                       soundEffects.playTick(isMuted);
-                      setAvatar(emoji);
+                      setAvatarCategory(cat.key);
                     }}
-                    aria-pressed={selected}
-                    className={`aspect-square rounded-2xl text-2xl flex items-center justify-center border-2 transition-all touch-manipulation ${
-                      selected
-                        ? 'bg-gradient-to-br from-rose-100 to-amber-100 border-rose-500 scale-105 shadow-md'
-                        : 'bg-slate-50 hover:bg-rose-50 border-slate-200'
+                    className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl font-black text-xs transition-all touch-manipulation ${
+                      isCatActive
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md scale-[1.02]'
+                        : 'text-slate-700 hover:bg-white/80 bg-white/40'
                     }`}
                   >
-                    {emoji}
+                    <AvatarDisplay avatar={cat.icon} className="w-5 h-5 shrink-0" />
+                    <span className="truncate">{cat.labels[lang] || cat.labels.he}</span>
                   </button>
                 );
               })}
+            </div>
+
+            {/* Avatars in active category */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {currentCategoryObj.avatars.map((item) => {
+                const isSelected = avatar === item.id;
+                const displayName = item.names[lang] || item.names.he;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    title={displayName}
+                    onClick={() => {
+                      soundEffects.playTick(isMuted);
+                      setAvatar(item.id);
+                    }}
+                    aria-pressed={isSelected}
+                    className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 transition-all touch-manipulation min-h-[92px] ${
+                      isSelected
+                        ? 'bg-gradient-to-br from-rose-100 via-pink-50 to-amber-100 border-rose-500 ring-4 ring-rose-300/50 scale-105 shadow-md z-10'
+                        : 'bg-white hover:bg-rose-50/70 border-slate-200 shadow-sm'
+                    }`}
+                  >
+                    <AvatarDisplay
+                      avatar={item.id}
+                      className="w-12 h-12 shrink-0 drop-shadow-sm transition-transform group-hover:scale-105"
+                    />
+                    <span className="text-[11px] font-black text-slate-800 line-clamp-2 max-w-full mt-1.5 px-0.5 leading-tight text-center">
+                      {displayName}
+                    </span>
+                    {isSelected && (
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-black shadow-md border-2 border-white">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selected avatar indicator */}
+            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs sm:text-sm">
+              <span className="font-bold text-slate-600">{t('selectedAvatarLabel')}</span>
+              <span className="font-black text-rose-700 flex items-center gap-2">
+                <AvatarDisplay avatar={avatar} className="w-8 h-8 shrink-0 drop-shadow-sm" />
+                <span className="text-sm font-black">{getAvatarDisplayName(avatar, lang)}</span>
+              </span>
             </div>
           </div>
 
@@ -415,7 +495,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       {/* Player Status Strip */}
       <div className="rounded-2xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-sm px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-2xl shrink-0">{joinedIdentityRef.current.avatar}</span>
+          <AvatarDisplay avatar={joinedIdentityRef.current.avatar} className="w-8 h-8 shrink-0 drop-shadow-sm" />
           <div className="min-w-0">
             <p className="font-black text-slate-900 truncate">{joinedIdentityRef.current.name}</p>
             <p className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600">
@@ -450,8 +530,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       {/* WAITING FOR HOST (SETUP / LOBBY / INITIAL CONNECT) */}
       {(!gameState || gameState.phase === 'SETUP' || gameState.phase === 'LOBBY') && (
         <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 shadow-xl p-6 sm:p-8 text-center space-y-5">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-100 to-amber-100 border-2 border-rose-200 flex items-center justify-center text-4xl mx-auto shadow-md animate-float-gentle">
-            {joinedIdentityRef.current.avatar}
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-100 to-amber-100 border-2 border-rose-200 flex items-center justify-center mx-auto shadow-md animate-float-gentle p-2">
+            <AvatarDisplay avatar={joinedIdentityRef.current.avatar} className="w-14 h-14 drop-shadow-md" />
           </div>
 
           <div className="space-y-1">
@@ -459,7 +539,80 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               {t('youJoinedAs')}
             </p>
             <h2 className="text-2xl font-black text-slate-900">{joinedIdentityRef.current.name}</h2>
+            <p className="text-xs font-bold text-rose-600">
+              {getAvatarDisplayName(joinedIdentityRef.current.avatar, lang)}
+            </p>
           </div>
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsChangingLobbyAvatar(!isChangingLobbyAvatar)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-black transition-colors"
+            >
+              <span>🎨</span>
+              <span>{t('changeAvatarBtn')}</span>
+            </button>
+          </div>
+
+          {isChangingLobbyAvatar && (
+            <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-start space-y-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-white/70 rounded-2xl">
+                {AVATAR_CATEGORIES.map((cat) => {
+                  const isCatActive = avatarCategory === cat.key;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => {
+                        soundEffects.playTick(isMuted);
+                        setAvatarCategory(cat.key);
+                      }}
+                      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl font-black text-xs transition-all touch-manipulation ${
+                        isCatActive
+                          ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md'
+                          : 'text-slate-700 hover:bg-white bg-slate-100/60'
+                      }`}
+                    >
+                      <AvatarDisplay avatar={cat.icon} className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{cat.labels[lang] || cat.labels.he}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {currentCategoryObj.avatars.map((item) => {
+                  const isSelected = joinedIdentityRef.current.avatar === item.id;
+                  const displayName = item.names[lang] || item.names.he;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      title={displayName}
+                      onClick={() => handleUpdateLobbyAvatar(item.id)}
+                      aria-pressed={isSelected}
+                      className={`relative flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all touch-manipulation min-h-[76px] ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-rose-100 to-amber-100 border-rose-500 ring-2 ring-rose-400/50 scale-105 shadow-md'
+                          : 'bg-white hover:bg-rose-50/70 border-slate-200'
+                      }`}
+                    >
+                      <AvatarDisplay avatar={item.id} className="w-10 h-10 shrink-0 drop-shadow-sm" />
+                      <span className="text-[10px] font-black text-slate-800 line-clamp-2 max-w-full mt-1 px-0.5 leading-tight text-center">
+                        {displayName}
+                      </span>
+                      {isSelected && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center text-[9px] font-black shadow border border-white">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-2">
             <p className="font-extrabold text-amber-900">
@@ -598,7 +751,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                 >
                   <span className="flex items-center gap-2 truncate">
                     <span>#{idx + 1}</span>
-                    <span>{p.avatar}</span>
+                    <AvatarDisplay avatar={p.avatar} className="w-5 h-5 shrink-0" />
                     <span className="truncate">{p.name}</span>
                   </span>
                   <span className="text-rose-700 shrink-0">

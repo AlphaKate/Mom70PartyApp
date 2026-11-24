@@ -10,6 +10,7 @@ import {
 import { Language, WishItem } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
 import { soundEffects } from '../../services/contentService';
+import { AvatarDisplay } from '../common/AvatarDisplay';
 
 interface PlayerWishInputProps {
   onSubmitWish: (text: string) => void;
@@ -371,9 +372,10 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                         : 'opacity-95'
                     }`}
                   >
-                    <span className="text-sm sm:text-xl leading-none">
-                      {assigned.wish.avatar}
-                    </span>
+                    <AvatarDisplay
+                      avatar={assigned.wish.avatar}
+                      className="w-5 h-5 sm:w-7 sm:h-7 shrink-0 drop-shadow-sm"
+                    />
                     <span className="hidden md:block text-[9px] font-extrabold leading-tight truncate max-w-full px-0.5 mt-0.5 text-white/95">
                       {getShortSnippet(assigned.wish.text)}
                     </span>
@@ -427,9 +429,10 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                 <p className="text-lg sm:text-2xl font-black text-slate-800 break-words leading-snug">
                   “{activeWish.text}”
                 </p>
-                <p className="text-sm font-bold text-rose-600">
-                  {activeWish.avatar} {activeWish.playerName}
-                </p>
+                <div className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600">
+                  <AvatarDisplay avatar={activeWish.avatar} className="w-5 h-5 shrink-0" />
+                  <span>{activeWish.playerName}</span>
+                </div>
               </div>
 
               {wishes.length > 1 && (
@@ -491,9 +494,10 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="text-2xl leading-none shrink-0 mt-0.5">
-                      {wish.avatar}
-                    </span>
+                    <AvatarDisplay
+                      avatar={wish.avatar}
+                      className="w-7 h-7 shrink-0 mt-0.5"
+                    />
                     <div className="min-w-0">
                       <p className="font-bold leading-snug break-words">
                         “{wish.text}”

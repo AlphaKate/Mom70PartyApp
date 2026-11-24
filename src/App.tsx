@@ -168,10 +168,11 @@ export function App() {
             <span>{t('birthdayBadge')}</span>
           </div>
 
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-rose-500 via-pink-500 to-amber-500 border-4 border-white flex flex-col items-center justify-center mx-auto shadow-xl animate-float-gentle text-white">
-            <Sparkles className="w-5 h-5 text-amber-200 mb-0.5" aria-hidden="true" />
-            <span className="text-3xl font-black tracking-tight leading-none drop-shadow-sm">7.0</span>
-          </div>
+          <img
+            src="/icon.svg"
+            alt="Mom v7.0"
+            className="w-24 h-24 rounded-3xl shadow-xl animate-float-gentle mx-auto border-4 border-white bg-rose-500 object-cover"
+          />
 
           <h1 className="text-4xl sm:text-6xl font-black text-rose-900 leading-tight tracking-tight">
             {t('appTitle')}

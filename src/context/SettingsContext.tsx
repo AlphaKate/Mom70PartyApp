@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { FontScale, Language } from '../types/game';
+import { AppTheme, FontScale, Language } from '../types/game';
 import { translate, TranslationKey } from '../i18n/translations';
 
 export type SettingsScope = 'host' | 'player' | 'app';
@@ -10,8 +10,15 @@ export interface SettingsContextValue {
   dir: 'rtl' | 'ltr';
   fontScale: FontScale;
   setFontScale: (scale: FontScale) => void;
+  theme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
+  isDarkMode: boolean;
   isMuted: boolean;
   setIsMuted: (muted: boolean) => void;
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
+  openSettings: () => void;
+  closeSettings: () => void;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
   scope: SettingsScope;
 }
@@ -26,12 +33,14 @@ export interface SettingsProviderProps {
 }
 
 const FONT_SIZE_MAP: Record<FontScale, string> = {
+  small: '14px',
   normal: '16px',
   large: '19px',
   huge: '22px',
 };
 
 const ZOOM_MAP: Record<FontScale, string> = {
+  small: '0.875',
   normal: '1',
   large: '1.1875',
   huge: '1.375',
@@ -41,9 +50,10 @@ const LEGACY_STORAGE_KEYS = {
   lang: 'mom70_lang',
   fontScale: 'mom70_font_scale',
   muted: 'mom70_muted',
+  theme: 'mom70_theme',
 } as const;
 
-function getScopedKey(scope: SettingsScope, key: 'lang' | 'fontScale' | 'muted'): string {
+function getScopedKey(scope: SettingsScope, key: 'lang' | 'fontScale' | 'muted' | 'theme'): string {
   const suffix = key === 'fontScale' ? 'font_scale' : key;
   return `mom70_${scope}_${suffix}`;
 }
@@ -67,11 +77,27 @@ function readStoredLang(scope: SettingsScope, fallback: Language): Language {
 function readStoredFontScale(scope: SettingsScope, fallback: FontScale): FontScale {
   try {
     const scopedVal = window.localStorage.getItem(getScopedKey(scope, 'fontScale'));
-    if (scopedVal === 'normal' || scopedVal === 'large' || scopedVal === 'huge') {
+    if (scopedVal === 'small' || scopedVal === 'normal' || scopedVal === 'large' || scopedVal === 'huge') {
       return scopedVal;
     }
     const legacyVal = window.localStorage.getItem(LEGACY_STORAGE_KEYS.fontScale);
-    if (legacyVal === 'normal' || legacyVal === 'large' || legacyVal === 'huge') {
+    if (legacyVal === 'small' || legacyVal === 'normal' || legacyVal === 'large' || legacyVal === 'huge') {
+      return legacyVal;
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  return fallback;
+}
+
+function readStoredTheme(scope: SettingsScope, fallback: AppTheme): AppTheme {
+  try {
+    const scopedVal = window.localStorage.getItem(getScopedKey(scope, 'theme')) as AppTheme | null;
+    if (scopedVal === 'light' || scopedVal === 'dark' || scopedVal === 'auto') {
+      return scopedVal;
+    }
+    const legacyVal = window.localStorage.getItem(LEGACY_STORAGE_KEYS.theme) as AppTheme | null;
+    if (legacyVal === 'light' || legacyVal === 'dark' || legacyVal === 'auto') {
       return legacyVal;
     }
   } catch {
@@ -106,12 +132,30 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
 }) => {
   const [lang, setLangState] = useState<Language>(() => readStoredLang(scope, defaultLang));
   const [fontScale, setFontScaleState] = useState<FontScale>(() => readStoredFontScale(scope, 'normal'));
+  const [theme, setThemeState] = useState<AppTheme>(() => readStoredTheme(scope, 'light'));
   const [isMuted, setIsMutedState] = useState<boolean>(() => readStoredMuted(scope, false));
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, []);
+
+  const isDarkMode = theme === 'dark' || (theme === 'auto' && systemPrefersDark);
 
   // Sync state if scope or defaultLang changes dynamically
   useEffect(() => {
     setLangState(readStoredLang(scope, defaultLang));
     setFontScaleState(readStoredFontScale(scope, 'normal'));
+    setThemeState(readStoredTheme(scope, 'light'));
     setIsMutedState(readStoredMuted(scope, false));
   }, [scope, defaultLang]);
 
@@ -147,6 +191,21 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
     [scope]
   );
 
+  const setTheme = useCallback(
+    (nextTheme: AppTheme) => {
+      setThemeState(nextTheme);
+      try {
+        window.localStorage.setItem(getScopedKey(scope, 'theme'), nextTheme);
+        if (scope === 'app') {
+          window.localStorage.setItem(LEGACY_STORAGE_KEYS.theme, nextTheme);
+        }
+      } catch {
+        // Ignore storage errors
+      }
+    },
+    [scope]
+  );
+
   const setIsMuted = useCallback(
     (muted: boolean) => {
       setIsMutedState(muted);
@@ -161,6 +220,9 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
     },
     [scope]
   );
+
+  const openSettings = useCallback(() => setIsSettingsOpen(true), []);
+  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
 
   const initialDocRef = useRef<{ dir: string; lang: string; fontSize: string } | null>(null);
 
@@ -178,7 +240,8 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
     document.documentElement.dir = dir;
     document.documentElement.lang = lang;
     document.documentElement.style.fontSize = FONT_SIZE_MAP[fontScale];
-  }, [applyToDocument, dir, lang, fontScale]);
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [applyToDocument, dir, lang, fontScale, isDarkMode]);
 
   useEffect(() => {
     return () => {
@@ -202,12 +265,36 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
       dir,
       fontScale,
       setFontScale,
+      theme,
+      setTheme,
+      isDarkMode,
       isMuted,
       setIsMuted,
+      isSettingsOpen,
+      setIsSettingsOpen,
+      openSettings,
+      closeSettings,
       t,
       scope,
     }),
-    [lang, setLang, dir, fontScale, setFontScale, isMuted, setIsMuted, t, scope]
+    [
+      lang,
+      setLang,
+      dir,
+      fontScale,
+      setFontScale,
+      theme,
+      setTheme,
+      isDarkMode,
+      isMuted,
+      setIsMuted,
+      isSettingsOpen,
+      setIsSettingsOpen,
+      openSettings,
+      closeSettings,
+      t,
+      scope,
+    ]
   );
 
   if (!applyToDocument) {
@@ -216,7 +303,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
         <div
           dir={dir}
           lang={lang}
-          className={`settings-scope-container settings-scope-${scope} w-full ${className}`.trim()}
+          className={`settings-scope-container settings-scope-${scope} ${isDarkMode ? 'dark' : ''} w-full ${className}`.trim()}
           style={{
             zoom: ZOOM_MAP[fontScale],
             fontSize: FONT_SIZE_MAP[fontScale],
