@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ImageOff, Pause, Sparkles, Trophy } from 'lucide-react';
+import { Check, ImageOff, Pause, Sparkles, Timer, Trophy, Zap } from 'lucide-react';
 import { Language, MemoryPair } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
 import { getDriveImageEndpoints, soundEffects } from '../../services/contentService';
@@ -7,6 +7,7 @@ import { getDriveImageEndpoints, soundEffects } from '../../services/contentServ
 interface MemoryGameProps {
   pairs: MemoryPair[];
   isPaused: boolean;
+  roundStartTime?: number;
   onProgress: (progressPercent: number, scoreDelta: number, completed: boolean) => void;
 }
 
@@ -61,6 +62,7 @@ function buildShuffledDeck(pairs: MemoryPair[]): DeckCard[] {
 export const MemoryGame: React.FC<MemoryGameProps> = ({
   pairs,
   isPaused,
+  roundStartTime,
   onProgress,
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
@@ -86,6 +88,10 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   const [lastMatchedText, setLastMatchedText] = useState<string | null>(null);
   const [endpointIndices, setEndpointIndices] = useState<Record<string, number>>({});
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  const [startTime] = useState<number>(() => roundStartTime || Date.now());
+  const [now, setNow] = useState<number>(() => Date.now());
+  const [finalBonusEarned, setFinalBonusEarned] = useState<number | null>(null);
 
   const mismatchTimerRef = useRef<number | null>(null);
   const bannerTimerRef = useRef<number | null>(null);
@@ -129,6 +135,18 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   const progressPercent = totalPairs > 0 ? Math.round((matchedCount / totalPairs) * 100) : 0;
   const isCompleted = totalPairs > 0 && matchedCount >= totalPairs;
 
+  useEffect(() => {
+    if (isCompleted || isPaused) return;
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [isCompleted, isPaused]);
+
+  const elapsedSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
+  // 60-second speed bonus window: up to +200 points
+  const currentSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (200 / 60)));
+
   const handleCardClick = (card: DeckCard) => {
     if (isPaused || isChecking || isCompleted) return;
     if (matchedPairIds.includes(card.pairId)) return;
@@ -150,7 +168,12 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
         const nextCount = nextMatched.length;
         const nextPercent = totalPairs > 0 ? Math.round((nextCount / totalPairs) * 100) : 100;
         const completed = totalPairs > 0 && nextCount >= totalPairs;
-        const scoreDelta = 100 + (completed ? 150 : 0);
+        const earnedSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (200 / 60)));
+        const scoreDelta = 100 + (completed ? (150 + earnedSpeedBonus) : 0);
+
+        if (completed) {
+          setFinalBonusEarned(earnedSpeedBonus);
+        }
 
         setMatchedPairIds(nextMatched);
         setFlippedUids([]);
@@ -219,12 +242,20 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
             <h2 className="text-xl font-extrabold text-rose-700">{t('memoryTitle')}</h2>
             <p className="text-sm text-slate-600">{copy.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-800 font-bold text-sm">
+              <Timer className="w-4 h-4 text-slate-500" />
+              {elapsedSeconds} {t('secondsUnit')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
+              <Zap className="w-4 h-4 text-amber-600" />
+              +{currentSpeedBonus}
+            </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm">
               <Check className="w-4 h-4" />
               {t('memoryPairsFound')}: {matchedCount}/{totalPairs}
             </span>
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-rose-100 text-rose-900 font-bold text-sm">
               {t('memoryMoves')}: {moves}
             </span>
           </div>
@@ -250,9 +281,15 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
 
       {/* Completion Banner */}
       {isCompleted && (
-        <div className="rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 text-white p-5 shadow-xl text-center space-y-1.5">
+        <div className="rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 text-white p-5 shadow-xl text-center space-y-2">
           <Trophy className="w-10 h-10 mx-auto text-yellow-200" />
           <h3 className="text-2xl font-extrabold">{t('memoryCompleted')}</h3>
+          {finalBonusEarned !== null && finalBonusEarned > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur font-black text-sm text-yellow-200 border border-white/30">
+              <Zap className="w-4 h-4 fill-yellow-200" />
+              {t('speedBonusEarned', { bonus: finalBonusEarned })}
+            </div>
+          )}
           <p className="text-sm sm:text-base text-white/95 font-medium">
             {copy.completedSubtitle}
           </p>

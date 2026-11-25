@@ -164,6 +164,15 @@ const he = {
   memoryMatched: 'התאמה מושלמת!',
   memoryCompleted: 'אלופים! מצאתם את כל הזוגות!',
   memoryCardBack: 'גירסא 7.0',
+  speedBonusLabel: 'בונוס מהירות',
+  speedBonusEarned: 'בונוס מהירות: +{bonus} נק׳',
+  timeElapsed: 'זמן',
+  secondsUnit: 'שנ׳',
+  arrivalMedalGold: '🥇 מקום 1 (+100 נק׳)',
+  arrivalMedalSilver: '🥈 מקום 2 (+60 נק׳)',
+  arrivalMedalBronze: '🥉 מקום 3 (+30 נק׳)',
+  arrivalOrder: 'סדר הגעה',
+  arrivalMedalEarned: 'זכית במדליית {medal}!',
 
   // Puzzle Game
   puzzleTitle: 'פאזל חושף תמונה',
@@ -394,6 +403,15 @@ const ru: TranslationDict = {
   memoryMatched: 'Отличная пара!',
   memoryCompleted: 'Браво! Все пары найдены!',
   memoryCardBack: 'Версия 7.0',
+  speedBonusLabel: 'Бонус за скорость',
+  speedBonusEarned: 'Бонус за скорость: +{bonus} очков',
+  timeElapsed: 'Время',
+  secondsUnit: 'сек',
+  arrivalMedalGold: '🥇 1-е место (+100 очков)',
+  arrivalMedalSilver: '🥈 2-е место (+60 очков)',
+  arrivalMedalBronze: '🥉 3-е место (+30 очков)',
+  arrivalOrder: 'Порядок финиша',
+  arrivalMedalEarned: 'Вы получили медаль {medal}!',
 
   // Puzzle Game
   puzzleTitle: 'Семейный фото-пазл',
@@ -621,6 +639,15 @@ const en: TranslationDict = {
   memoryMatched: 'Great Match!',
   memoryCompleted: 'Amazing! You matched every pair!',
   memoryCardBack: 'Version 7.0',
+  speedBonusLabel: 'Speed Bonus',
+  speedBonusEarned: 'Speed Bonus: +{bonus} pts',
+  timeElapsed: 'Time',
+  secondsUnit: 's',
+  arrivalMedalGold: '🥇 1st Place (+100 pts)',
+  arrivalMedalSilver: '🥈 2nd Place (+60 pts)',
+  arrivalMedalBronze: '🥉 3rd Place (+30 pts)',
+  arrivalOrder: 'Finish Order',
+  arrivalMedalEarned: 'You earned a {medal} medal!',
 
   // Puzzle Game
   puzzleTitle: 'Family Photo Puzzle',

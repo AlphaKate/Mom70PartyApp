@@ -33,6 +33,27 @@ import {
   TriviaGame,
 } from '../games';
 
+const SESSION_STORAGE_KEY = 'mom70_player_session';
+
+interface SavedPlayerSession {
+  id: string;
+  name: string;
+  avatar: string;
+  roomCode: string;
+}
+
+function readSavedSession(): SavedPlayerSession | null {
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.id === 'string' && typeof parsed.name === 'string') {
+      return parsed;
+    }
+  } catch {}
+  return null;
+}
+
 export interface PlayerClientProps {
   initialRoomCode?: string;
   compact?: boolean;
@@ -56,21 +77,23 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
 
+  const [savedSession] = useState<SavedPlayerSession | null>(() => readSavedSession());
+
   const [playerId] = useState(
-    () => `player-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    () => savedSession?.id || `player-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
   );
   const [roomCode, setRoomCode] = useState<string>(() => {
-    const seeded = (initialRoomCode ?? readRoomFromUrl()).trim().toUpperCase();
+    const seeded = (initialRoomCode ?? savedSession?.roomCode ?? readRoomFromUrl()).trim().toUpperCase();
     return seeded.replace(/[^A-Z0-9_-]/g, '');
   });
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState(() => savedSession?.name || '');
   const [avatarCategory, setAvatarCategory] = useState<AvatarCategoryKey>('fairies');
-  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
+  const [avatar, setAvatar] = useState(() => savedSession?.avatar || DEFAULT_AVATAR);
   const [isChangingLobbyAvatar, setIsChangingLobbyAvatar] = useState(false);
   const [formError, setFormError] = useState(false);
 
-  const [hasJoined, setHasJoined] = useState(false);
-  const [activeRoomCode, setActiveRoomCode] = useState('');
+  const [hasJoined, setHasJoined] = useState(() => Boolean(savedSession?.name && (initialRoomCode || savedSession?.roomCode)));
+  const [activeRoomCode, setActiveRoomCode] = useState(() => (initialRoomCode ?? savedSession?.roomCode ?? '').trim().toUpperCase());
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [connStatus, setConnStatus] = useState<PlayerConnectionStatus>('connecting');
   const [localAnswers, setLocalAnswers] = useState<Record<string, number>>({});
@@ -79,8 +102,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const clientRef = useRef<PlayerP2PClient | null>(null);
   const joinedIdentityRef = useRef<{ id: string; name: string; avatar: string }>({
     id: playerId,
-    name: '',
-    avatar: DEFAULT_AVATAR,
+    name: savedSession?.name || '',
+    avatar: savedSession?.avatar || DEFAULT_AVATAR,
   });
   const finalePoppedRef = useRef(false);
 
@@ -93,6 +116,12 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
     soundEffects.playTick(isMuted);
     setAvatar(newEmoji);
     joinedIdentityRef.current.avatar = newEmoji;
+    try {
+      const current = readSavedSession();
+      if (current) {
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ ...current, avatar: newEmoji }));
+      }
+    } catch {}
     clientRef.current?.send({
       type: 'PLAYER_JOIN',
       payload: {
@@ -191,6 +220,15 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       name: cleanedName,
       avatar,
     };
+    try {
+      const sessionObj: SavedPlayerSession = {
+        id: playerId,
+        name: cleanedName,
+        avatar,
+        roomCode: cleanedRoom,
+      };
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionObj));
+    } catch {}
     setRoomCode(cleanedRoom);
     setActiveRoomCode(cleanedRoom);
     setHasJoined(true);
@@ -306,6 +344,13 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       ? localAnswers[questionKey]
       : myPlayer?.lastAnswerIndex;
 
+  const handleBackHome = () => {
+    try {
+      window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch {}
+    onBackHome?.();
+  };
+
   // ONBOARDING VIEW
   if (!hasJoined) {
     return (
@@ -314,7 +359,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           {onBackHome && (
             <button
               type="button"
-              onClick={onBackHome}
+              onClick={handleBackHome}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-white border border-rose-200 text-rose-700 font-bold text-sm shadow-sm"
             >
               <Home className="w-4 h-4" aria-hidden="true" />
@@ -490,7 +535,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
         {onBackHome && (
           <button
             type="button"
-            onClick={onBackHome}
+            onClick={handleBackHome}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white border border-rose-200 text-rose-700 font-bold text-xs sm:text-sm shadow-sm"
           >
             <Home className="w-4 h-4" aria-hidden="true" />
@@ -644,6 +689,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           key={gameState.roundStartTime}
           pairs={gameState.content.memoryPairs}
           isPaused={gameState.isPaused}
+          roundStartTime={gameState.roundStartTime}
           onProgress={handleProgress}
         />
       )}
@@ -654,6 +700,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           key={`${activePuzzle.id}-${gameState.roundStartTime}`}
           puzzle={activePuzzle}
           isPaused={gameState.isPaused}
+          roundStartTime={gameState.roundStartTime}
           onProgress={handleProgress}
         />
       )}

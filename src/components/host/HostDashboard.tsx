@@ -282,8 +282,15 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
         const existing = prev.players[playerId];
         if (!existing) return prev;
 
+        let finishRank = existing.finishRank;
+        let medalBonus = 0;
         if (completed && !existing.completedCurrentGame) {
           soundEffects.playSuccess(isMutedRef.current);
+          const alreadyFinished = Object.values(prev.players).filter((p) => p.completedCurrentGame).length;
+          finishRank = alreadyFinished + 1;
+          if (finishRank === 1) medalBonus = 100;
+          else if (finishRank === 2) medalBonus = 60;
+          else if (finishRank === 3) medalBonus = 30;
         }
 
         const clampedProgress = Math.max(0, Math.min(100, Math.round(progress)));
@@ -296,8 +303,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             [playerId]: {
               ...existing,
               progress: Math.max(existing.progress, clampedProgress),
-              score: existing.score + safeDelta,
+              score: existing.score + safeDelta + medalBonus,
               completedCurrentGame: existing.completedCurrentGame || completed,
+              finishRank,
               connected: true,
             },
           },
@@ -443,7 +451,16 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           const step = 20 + Math.floor(Math.random() * 20);
           const nextProgress = Math.min(100, chosen.progress + step);
           const completed = nextProgress >= 100;
-          const scoreDelta = 40 + (completed ? 120 : 0);
+          let finishRank = chosen.finishRank;
+          let medalBonus = 0;
+          if (completed && !chosen.completedCurrentGame) {
+            const alreadyFinished = Object.values(prev.players).filter((p) => p.completedCurrentGame).length;
+            finishRank = alreadyFinished + 1;
+            if (finishRank === 1) medalBonus = 100;
+            else if (finishRank === 2) medalBonus = 60;
+            else if (finishRank === 3) medalBonus = 30;
+          }
+          const scoreDelta = 40 + (completed ? 120 : 0) + medalBonus;
 
           return {
             ...prev,
@@ -454,6 +471,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 progress: nextProgress,
                 score: chosen.score + scoreDelta,
                 completedCurrentGame: completed,
+                finishRank,
               },
             },
           };
@@ -627,6 +645,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           completedCurrentGame: false,
           lastAnswerIndex: undefined,
           lastAnswerCorrect: undefined,
+          finishRank: undefined,
         };
       }
       return {
@@ -679,6 +698,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           completedCurrentGame: false,
           lastAnswerIndex: undefined,
           lastAnswerCorrect: undefined,
+          finishRank: undefined,
         };
       }
 
@@ -1391,6 +1411,21 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-xs font-black">
                             <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                             {t('completedBadge')}
+                          </span>
+                        )}
+                        {player.finishRank === 1 && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-xs font-black shadow-sm animate-pulse">
+                            {t('arrivalMedalGold')}
+                          </span>
+                        )}
+                        {player.finishRank === 2 && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-300 text-slate-900 text-xs font-black shadow-sm">
+                            {t('arrivalMedalSilver')}
+                          </span>
+                        )}
+                        {player.finishRank === 3 && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-100 text-xs font-black shadow-sm">
+                            {t('arrivalMedalBronze')}
                           </span>
                         )}
                       </div>

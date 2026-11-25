@@ -24,6 +24,7 @@ export interface Player {
   lastAnswerCorrect?: boolean;
   wish?: string;
   connected: boolean;
+  finishRank?: number;
 }
 
 export interface MemoryPair {

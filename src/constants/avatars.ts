@@ -352,6 +352,9 @@ export const AVATAR_CATEGORIES: AvatarCategory[] = [
 
 export const DEFAULT_AVATAR = AVATAR_CATEGORIES[0].avatars[0].id; // 'fairy_nap'
 
+export const ALL_AVATARS: AvatarItem[] = AVATAR_CATEGORIES.flatMap((c) => c.avatars);
+export const AVATARS = ALL_AVATARS;
+
 export const ALL_AVATAR_IDS: string[] = AVATAR_CATEGORIES.flatMap((c) =>
   c.avatars.map((a) => a.id)
 );

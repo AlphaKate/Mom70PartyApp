@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Check, Eye, EyeOff, Hash, Pause, Sparkles, Trophy } from 'lucide-react';
+import { BookOpen, Check, Eye, EyeOff, Hash, Pause, Sparkles, Timer, Trophy, Zap } from 'lucide-react';
 import { Language, PuzzleItem } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
 import { getDriveImageEndpoints, soundEffects } from '../../services/contentService';
@@ -7,6 +7,7 @@ import { getDriveImageEndpoints, soundEffects } from '../../services/contentServ
 interface PuzzleGameProps {
   puzzle: PuzzleItem;
   isPaused: boolean;
+  roundStartTime?: number;
   onProgress: (progressPercent: number, scoreDelta: number, completed: boolean) => void;
 }
 
@@ -83,6 +84,7 @@ function createShuffledBoard(totalTiles: number): number[] {
 export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   puzzle,
   isPaused,
+  roundStartTime,
   onProgress,
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
@@ -99,6 +101,10 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [showNumbers, setShowNumbers] = useState(false);
   const [endpointIdx, setEndpointIdx] = useState(0);
+
+  const [startTime] = useState<number>(() => roundStartTime || Date.now());
+  const [now, setNow] = useState<number>(() => Date.now());
+  const [finalBonusEarned, setFinalBonusEarned] = useState<number | null>(null);
 
   const prevKeyRef = useRef<string>(puzzleKey);
 
@@ -123,6 +129,18 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   );
   const progressPercent = totalTiles > 0 ? Math.round((correctCount / totalTiles) * 100) : 100;
   const isSolved = totalTiles > 0 && correctCount === totalTiles;
+
+  useEffect(() => {
+    if (isSolved || isPaused) return;
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [isSolved, isPaused]);
+
+  const elapsedSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
+  // 60-second speed bonus window: up to +250 points
+  const currentSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (250 / 60)));
 
   const imageEndpoints = useMemo(
     () => getDriveImageEndpoints(puzzle.imageUrl),
@@ -158,13 +176,18 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
     const nextProgress = Math.round((nextCorrectCount / totalTiles) * 100);
     const completed = nextCorrectCount === totalTiles;
 
+    const earnedSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (250 / 60)));
     let scoreDelta = 0;
     if (nextCorrectCount > bestCorrectCount) {
       const gainedTiles = nextCorrectCount - bestCorrectCount;
-      scoreDelta = gainedTiles * 25 + (completed ? 200 : 0);
+      scoreDelta = gainedTiles * 25 + (completed ? (200 + earnedSpeedBonus) : 0);
       setBestCorrectCount(nextCorrectCount);
     } else if (completed) {
-      scoreDelta = 200;
+      scoreDelta = 200 + earnedSpeedBonus;
+    }
+
+    if (completed) {
+      setFinalBonusEarned(earnedSpeedBonus);
     }
 
     setBoard(nextBoard);
@@ -195,12 +218,20 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
             <p className="text-sm text-slate-600">{copy.subtitle}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-800 font-bold text-sm">
+              <Timer className="w-4 h-4 text-slate-500" />
+              {elapsedSeconds} {t('secondsUnit')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
+              <Zap className="w-4 h-4 text-amber-600" />
+              +{currentSpeedBonus}
+            </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm">
               <Check className="w-4 h-4" />
               {t('puzzleTilesCorrect')}: {correctCount}/{totalTiles}
             </span>
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-100 text-orange-900 font-bold text-sm">
               {copy.moves}: {moves}
             </span>
           </div>
@@ -361,9 +392,17 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
       {/* Solved Story Reveal */}
       {isSolved && (
         <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-amber-50 to-rose-50 border-2 border-emerald-400 p-5 shadow-xl space-y-2.5">
-          <div className="flex items-center gap-2 text-emerald-700 font-extrabold text-xl">
-            <Trophy className="w-7 h-7 text-amber-500 shrink-0" />
-            <span>{t('puzzleCompleted')}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-emerald-700 font-extrabold text-xl">
+              <Trophy className="w-7 h-7 text-amber-500 shrink-0" />
+              <span>{t('puzzleCompleted')}</span>
+            </div>
+            {finalBonusEarned !== null && finalBonusEarned > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-white font-black text-sm shadow">
+                <Zap className="w-4 h-4 fill-white" />
+                {t('speedBonusEarned', { bonus: finalBonusEarned })}
+              </span>
+            )}
           </div>
           <div className="flex items-start gap-2.5 pt-1 border-t border-emerald-200/80">
             <BookOpen className="w-5 h-5 text-rose-500 shrink-0 mt-1" />
