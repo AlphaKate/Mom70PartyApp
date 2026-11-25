@@ -78,6 +78,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
   const copy = COPY[lang];
 
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [optimisticAnswer, setOptimisticAnswer] = useState<number | undefined>(undefined);
   const elapsedRef = useRef(0);
   const lastTickTimestampRef = useRef<number | null>(null);
   const lastSoundSecondRef = useRef<number | null>(null);
@@ -91,9 +92,12 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
     lastSoundSecondRef.current = null;
     revealedKeyRef.current = null;
     setElapsedMs(0);
+    setOptimisticAnswer(undefined);
   }, [questionKey]);
 
-  const hasAnswered = selectedAnswer !== undefined;
+  const effectiveSelectedAnswer =
+    selectedAnswer !== undefined ? selectedAnswer : optimisticAnswer;
+  const hasAnswered = effectiveSelectedAnswer !== undefined;
   const isTimerActive = !isPaused && !revealAnswer && !hasAnswered;
 
   useEffect(() => {
@@ -132,11 +136,11 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
   useEffect(() => {
     if (revealAnswer && revealedKeyRef.current !== questionKey) {
       revealedKeyRef.current = questionKey;
-      if (selectedAnswer !== undefined && selectedAnswer === question.correctIndex) {
+      if (effectiveSelectedAnswer !== undefined && effectiveSelectedAnswer === question.correctIndex) {
         soundEffects.playSuccess(isMuted);
       }
     }
-  }, [revealAnswer, questionKey, selectedAnswer, question.correctIndex, isMuted]);
+  }, [revealAnswer, questionKey, effectiveSelectedAnswer, question.correctIndex, isMuted]);
 
   const remainingMs = Math.max(0, QUESTION_DURATION_MS - elapsedMs);
   const remainingPercent = Math.max(
@@ -150,6 +154,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
 
   const handleSelect = (idx: number) => {
     if (isButtonsDisabled) return;
+    setOptimisticAnswer(idx);
     soundEffects.playFlip(isMuted);
     onAnswer(idx, Math.max(250, Math.round(elapsedRef.current)));
   };
@@ -171,23 +176,34 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
                 {Math.max(1, totalQuestions)}
               </span>
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-extrabold text-sm ${
-                  remainingSeconds <= 5 && !hasAnswered && !revealAnswer
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-extrabold text-sm transition-all ${
+                  hasAnswered
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : remainingSeconds <= 5 && !revealAnswer
                     ? 'bg-rose-100 text-rose-700 animate-pulse'
                     : 'bg-slate-100 text-slate-700'
                 }`}
               >
-                <Clock className="w-3.5 h-3.5" />
-                {remainingSeconds}
-                {copy.secondsLeft}
+                {hasAnswered ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{t('quotesAnswerLockedBadge')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-3.5 h-3.5" />
+                    {remainingSeconds}
+                    {copy.secondsLeft}
+                  </>
+                )}
               </span>
             </div>
           </div>
 
           <div className="w-full h-2.5 bg-fuchsia-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-fuchsia-500 via-rose-400 to-amber-400 transition-all duration-150 rounded-full"
-              style={{ width: `${remainingPercent}%` }}
+              className={`h-full ${hasAnswered ? 'bg-emerald-500' : 'bg-gradient-to-r from-fuchsia-500 via-rose-400 to-amber-400'} transition-all duration-150 rounded-full`}
+              style={{ width: `${hasAnswered ? 100 : remainingPercent}%` }}
             />
           </div>
 
@@ -217,7 +233,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
       <div className="relative space-y-3">
         {options.map((quoteText, idx) => {
           const baseTheme = QUOTE_CARD_THEMES[idx % QUOTE_CARD_THEMES.length];
-          const isSelected = selectedAnswer === idx;
+          const isSelected = effectiveSelectedAnswer === idx;
           const isCorrect = idx === question.correctIndex;
 
           let cardClass = `${baseTheme} border-2 shadow-md`;
@@ -236,9 +252,9 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
           } else if (hasAnswered) {
             if (isSelected) {
               cardClass =
-                'bg-fuchsia-600 border-2 border-fuchsia-800 text-white ring-4 ring-fuchsia-300 shadow-xl scale-[1.01]';
+                'bg-fuchsia-600 border-2 border-fuchsia-800 text-white ring-4 ring-emerald-400 shadow-2xl scale-[1.01]';
             } else {
-              cardClass = `${baseTheme} border-2 opacity-45`;
+              cardClass = `${baseTheme} border-2 opacity-40 saturate-50`;
             }
           } else if (!isPaused) {
             cardClass += ' active:scale-[0.98]';
@@ -283,7 +299,10 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
                 <XCircle className="w-6 h-6 shrink-0" />
               )}
               {!revealAnswer && isSelected && (
-                <CheckCircle2 className="w-6 h-6 shrink-0" />
+                <span className="px-2.5 py-1 rounded-full bg-white text-fuchsia-800 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>{t('yourSelectedQuote')}</span>
+                </span>
               )}
             </button>
           );
@@ -301,12 +320,35 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
 
       {/* Waiting Banner */}
       {hasAnswered && !revealAnswer && (
-        <div className="rounded-2xl bg-fuchsia-50 border-2 border-fuchsia-200 p-4 text-center space-y-1">
-          <p className="font-extrabold text-fuchsia-900 text-base flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5 text-fuchsia-500" />
-            {t('quotesAnswerLocked')}
+        <div className="rounded-3xl bg-gradient-to-r from-fuchsia-50 via-rose-50 to-amber-50 border-2 border-fuchsia-300 p-4 sm:p-5 text-center space-y-3 shadow-md">
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-8 h-8 rounded-full bg-fuchsia-600 text-white flex items-center justify-center shadow">
+              <CheckCircle2 className="w-5 h-5" />
+            </span>
+            <span className="font-black text-fuchsia-950 text-base sm:text-lg">
+              {t('quotesAnswerSubmittedTitle')}
+            </span>
+          </div>
+
+          {effectiveSelectedAnswer !== undefined && options[effectiveSelectedAnswer] && (
+            <div className="max-w-md mx-auto rounded-2xl bg-white border-2 border-fuchsia-200 p-3 shadow-sm flex items-center gap-3 text-start">
+              <span className="w-8 h-8 rounded-full bg-fuchsia-100 text-fuchsia-800 flex items-center justify-center font-black text-sm shrink-0">
+                “”
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-extrabold text-fuchsia-700 uppercase tracking-wider">
+                  {t('yourSelectedQuote')}
+                </p>
+                <p className="text-sm sm:text-base font-black text-slate-900 truncate">
+                  “{options[effectiveSelectedAnswer]}”
+                </p>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs sm:text-sm font-bold text-slate-600">
+            {t('quotesWaitingReveal')}
           </p>
-          <p className="text-sm text-fuchsia-700">{t('quotesWaitingReveal')}</p>
         </div>
       )}
 
@@ -314,18 +356,18 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
       {revealAnswer && (
         <div
           className={`rounded-3xl border-2 p-5 shadow-lg space-y-2.5 ${
-            selectedAnswer === question.correctIndex
+            effectiveSelectedAnswer === question.correctIndex
               ? 'bg-emerald-50 border-emerald-300'
               : 'bg-rose-50 border-rose-200'
           }`}
         >
           <div className="flex items-center gap-2 font-extrabold text-lg">
-            {selectedAnswer === question.correctIndex ? (
+            {effectiveSelectedAnswer === question.correctIndex ? (
               <>
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
                 <span className="text-emerald-800">{copy.nailedIt}</span>
               </>
-            ) : selectedAnswer !== undefined ? (
+            ) : effectiveSelectedAnswer !== undefined ? (
               <>
                 <Heart className="w-6 h-6 text-rose-500 shrink-0" />
                 <span className="text-rose-800">{copy.notQuite}</span>

@@ -96,6 +96,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
   const copy = COPY[lang];
 
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [optimisticAnswer, setOptimisticAnswer] = useState<number | undefined>(undefined);
   const elapsedRef = useRef(0);
   const lastTickTimestampRef = useRef<number | null>(null);
   const lastSoundSecondRef = useRef<number | null>(null);
@@ -110,9 +111,12 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
     lastSoundSecondRef.current = null;
     revealedKeyRef.current = null;
     setElapsedMs(0);
+    setOptimisticAnswer(undefined);
   }, [questionKey]);
 
-  const hasAnswered = selectedAnswer !== undefined;
+  const effectiveSelectedAnswer =
+    selectedAnswer !== undefined ? selectedAnswer : optimisticAnswer;
+  const hasAnswered = effectiveSelectedAnswer !== undefined;
   const isTimerActive = !isPaused && !revealAnswer && !hasAnswered;
 
   useEffect(() => {
@@ -152,11 +156,11 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
   useEffect(() => {
     if (revealAnswer && revealedKeyRef.current !== questionKey) {
       revealedKeyRef.current = questionKey;
-      if (selectedAnswer !== undefined && selectedAnswer === question.correctIndex) {
+      if (effectiveSelectedAnswer !== undefined && effectiveSelectedAnswer === question.correctIndex) {
         soundEffects.playSuccess(isMuted);
       }
     }
-  }, [revealAnswer, questionKey, selectedAnswer, question.correctIndex, isMuted]);
+  }, [revealAnswer, questionKey, effectiveSelectedAnswer, question.correctIndex, isMuted]);
 
   const remainingMs = Math.max(0, QUESTION_DURATION_MS - elapsedMs);
   const remainingPercent = Math.max(
@@ -177,6 +181,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
 
   const handleSelect = (idx: number) => {
     if (isButtonsDisabled) return;
+    setOptimisticAnswer(idx);
     soundEffects.playFlip(isMuted);
     onAnswer(idx, Math.max(250, Math.round(elapsedRef.current)));
   };
@@ -192,23 +197,34 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
           </span>
 
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-sm ${
-              remainingSeconds <= 5 && !hasAnswered && !revealAnswer
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full font-extrabold text-sm transition-all ${
+              hasAnswered
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                : remainingSeconds <= 5 && !revealAnswer
                 ? 'bg-rose-100 text-rose-700 animate-pulse'
                 : 'bg-slate-100 text-slate-700'
             }`}
           >
-            <Clock className="w-4 h-4" />
-            {remainingSeconds}
-            {copy.secondsLeft}
+            {hasAnswered ? (
+              <>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>{t('triviaAnswerLockedBadge')}</span>
+              </>
+            ) : (
+              <>
+                <Clock className="w-4 h-4" />
+                {remainingSeconds}
+                {copy.secondsLeft}
+              </>
+            )}
           </span>
         </div>
 
         {/* Countdown Progress Bar */}
         <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
           <div
-            className={`h-full ${barColor} transition-all duration-150 rounded-full`}
-            style={{ width: `${remainingPercent}%` }}
+            className={`h-full ${hasAnswered ? 'bg-emerald-500' : barColor} transition-all duration-150 rounded-full`}
+            style={{ width: `${hasAnswered ? 100 : remainingPercent}%` }}
           />
         </div>
 
@@ -238,7 +254,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {options.map((optionText, idx) => {
             const palette = OPTION_STYLES[idx % OPTION_STYLES.length];
-            const isSelected = selectedAnswer === idx;
+            const isSelected = effectiveSelectedAnswer === idx;
             const isCorrect = idx === question.correctIndex;
 
             let cardClasses = `${palette.base} border-b-4 shadow-md`;
@@ -256,9 +272,9 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
               }
             } else if (hasAnswered) {
               if (isSelected) {
-                cardClasses = `${palette.base} border-b-4 ring-4 ring-slate-900 shadow-xl scale-[1.02]`;
+                cardClasses = `${palette.base} border-b-4 ring-4 ring-emerald-400 border-emerald-600 shadow-2xl scale-[1.02]`;
               } else {
-                cardClasses = `${palette.base} border-b-4 opacity-45`;
+                cardClasses = `${palette.base} border-b-4 opacity-40 saturate-50`;
               }
             } else if (!isPaused) {
               cardClasses += ' active:translate-y-0.5 active:scale-[0.98]';
@@ -292,7 +308,10 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
                   <XCircle className="w-7 h-7 shrink-0 text-white" />
                 )}
                 {!revealAnswer && isSelected && (
-                  <CheckCircle2 className="w-6 h-6 shrink-0 text-white" />
+                  <span className="px-2.5 py-1 rounded-full bg-white text-emerald-800 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>{t('yourSelectedAnswer')}</span>
+                  </span>
                 )}
               </button>
             );
@@ -311,12 +330,39 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
 
       {/* Locked-in Waiting Banner */}
       {hasAnswered && !revealAnswer && (
-        <div className="rounded-2xl bg-indigo-50 border-2 border-indigo-200 p-4 text-center space-y-1">
-          <p className="font-extrabold text-indigo-900 text-base flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            {t('triviaAnswerLocked')}
+        <div className="rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 border-2 border-emerald-300 p-4 sm:p-5 text-center space-y-3 shadow-md">
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
+              <CheckCircle2 className="w-5 h-5" />
+            </span>
+            <span className="font-black text-emerald-900 text-base sm:text-lg">
+              {t('triviaAnswerSubmittedTitle')}
+            </span>
+          </div>
+
+          {effectiveSelectedAnswer !== undefined && options[effectiveSelectedAnswer] && (
+            <div className="max-w-md mx-auto rounded-2xl bg-white border-2 border-emerald-200 p-3 shadow-sm flex items-center gap-3 text-start">
+              <span
+                className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-black text-sm ${
+                  OPTION_STYLES[effectiveSelectedAnswer % OPTION_STYLES.length].badge
+                }`}
+              >
+                {OPTION_STYLES[effectiveSelectedAnswer % OPTION_STYLES.length].symbol}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                  {t('yourSelectedAnswer')}
+                </p>
+                <p className="text-sm sm:text-base font-black text-slate-900 truncate">
+                  {options[effectiveSelectedAnswer]}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs sm:text-sm font-bold text-slate-600">
+            {t('triviaWaitingReveal')}
           </p>
-          <p className="text-sm text-indigo-700">{t('triviaWaitingReveal')}</p>
         </div>
       )}
 
@@ -324,18 +370,18 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
       {revealAnswer && (
         <div
           className={`rounded-3xl border-2 p-4 sm:p-5 shadow-lg space-y-2.5 ${
-            selectedAnswer === question.correctIndex
+            effectiveSelectedAnswer === question.correctIndex
               ? 'bg-emerald-50 border-emerald-300'
               : 'bg-amber-50 border-amber-300'
           }`}
         >
           <div className="flex items-center gap-2 font-extrabold text-lg">
-            {selectedAnswer === question.correctIndex ? (
+            {effectiveSelectedAnswer === question.correctIndex ? (
               <>
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
                 <span className="text-emerald-800">{copy.greatJob}</span>
               </>
-            ) : selectedAnswer !== undefined ? (
+            ) : effectiveSelectedAnswer !== undefined ? (
               <>
                 <XCircle className="w-6 h-6 text-rose-500 shrink-0" />
                 <span className="text-rose-800">{copy.niceTry}</span>

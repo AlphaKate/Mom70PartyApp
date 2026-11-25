@@ -1553,10 +1553,24 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 </div>
               )}
 
-            {!gameState.revealAnswer && playersList.length > 0 && answeredPlayersCount === 0 && (
-              <p className="text-sm font-bold text-slate-500 text-center">
-                {t('waitingForAnswers')}
-              </p>
+            {!gameState.revealAnswer && playersList.length > 0 && (
+              <div className="rounded-2xl bg-amber-50/80 border-2 border-amber-200 p-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="font-extrabold text-amber-900 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>
+                    {answeredPlayersCount === 0
+                      ? t('waitingForAnswers')
+                      : answeredPlayersCount === playersList.length
+                      ? t('allPlayersAnswered')
+                      : `${t('answeredCount')}: ${answeredPlayersCount} ${t('ofTotal')} ${playersList.length}`}
+                  </span>
+                </span>
+                {answeredPlayersCount === playersList.length && (
+                  <span className="px-3 py-1 rounded-xl bg-emerald-500 text-white font-black text-xs animate-pulse">
+                    {t('revealAnswerHint')}
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
@@ -1604,7 +1618,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                         )
                       )}
                       {!gameState.revealAnswer && player.lastAnswerIndex !== undefined && (
-                        <Check className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                          <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                          <span>{t('playerAnsweredBadge')}</span>
+                        </span>
                       )}
                       <span className="font-black text-rose-700 text-sm">
                         {player.score} {t('scoreUnit')}

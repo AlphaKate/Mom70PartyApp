@@ -214,6 +214,9 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const roundKey = gameState
     ? `${gameState.phase}:${gameState.currentQuestionIndex}:${gameState.roundStartTime}`
     : '';
+  const questionKey = gameState
+    ? `${gameState.phase}:${gameState.currentQuestionIndex}`
+    : '';
 
   const handleAnswer = useCallback(
     (answerIndex: number, timeMs: number) => {
@@ -221,6 +224,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       setLocalAnswers((prev) => ({
         ...prev,
         [roundKey]: answerIndex,
+        [questionKey]: answerIndex,
       }));
       clientRef.current?.send({
         type: 'PLAYER_ANSWER',
@@ -232,7 +236,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
         },
       });
     },
-    [gameState, roundKey, playerId]
+    [gameState, roundKey, questionKey, playerId]
   );
 
   const handleSubmitWish = useCallback(
@@ -296,7 +300,11 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   }, [gameState]);
 
   const selectedAnswer =
-    localAnswers[roundKey] !== undefined ? localAnswers[roundKey] : myPlayer?.lastAnswerIndex;
+    (roundKey && localAnswers[roundKey] !== undefined)
+      ? localAnswers[roundKey]
+      : (questionKey && localAnswers[questionKey] !== undefined)
+      ? localAnswers[questionKey]
+      : myPlayer?.lastAnswerIndex;
 
   // ONBOARDING VIEW
   if (!hasJoined) {
