@@ -32,8 +32,11 @@ import {
   QuotesGame,
   TriviaGame,
 } from '../games';
+import { MAX_PLAYER_NAME_LENGTH, validatePlayerName } from '../../services/gameLogic';
 
-const SESSION_STORAGE_KEY = 'mom70_player_session';
+function getSessionStorageKey(compact: boolean): string {
+  return compact ? 'mom70_player_session_demo' : 'mom70_player_session';
+}
 
 interface SavedPlayerSession {
   id: string;
@@ -42,12 +45,17 @@ interface SavedPlayerSession {
   roomCode: string;
 }
 
-function readSavedSession(): SavedPlayerSession | null {
+function readSavedSession(storageKey: string): SavedPlayerSession | null {
   try {
-    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(storageKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.id === 'string' && typeof parsed.name === 'string') {
+    if (
+      parsed &&
+      typeof parsed.id === 'string' &&
+      typeof parsed.name === 'string' &&
+      typeof parsed.roomCode === 'string'
+    ) {
       return parsed;
     }
   } catch {}
@@ -76,24 +84,40 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   onBackHome,
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
+  const sessionKey = getSessionStorageKey(compact);
 
-  const [savedSession] = useState<SavedPlayerSession | null>(() => readSavedSession());
+  const [savedSession] = useState<SavedPlayerSession | null>(() => readSavedSession(sessionKey));
+  const explicitRoom = (initialRoomCode || readRoomFromUrl())
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, '');
+  const canRestoreSession = Boolean(
+    savedSession?.name &&
+      savedSession?.roomCode &&
+      (!explicitRoom || savedSession.roomCode === explicitRoom)
+  );
 
   const [playerId] = useState(
-    () => savedSession?.id || `player-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    () =>
+      (canRestoreSession ? savedSession?.id : undefined) ||
+      `player-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
   );
   const [roomCode, setRoomCode] = useState<string>(() => {
-    const seeded = (initialRoomCode ?? savedSession?.roomCode ?? readRoomFromUrl()).trim().toUpperCase();
+    const seeded = (explicitRoom || savedSession?.roomCode || '').trim().toUpperCase();
     return seeded.replace(/[^A-Z0-9_-]/g, '');
   });
   const [nickname, setNickname] = useState(() => savedSession?.name || '');
   const [avatarCategory, setAvatarCategory] = useState<AvatarCategoryKey>('fairies');
   const [avatar, setAvatar] = useState(() => savedSession?.avatar || DEFAULT_AVATAR);
   const [isChangingLobbyAvatar, setIsChangingLobbyAvatar] = useState(false);
-  const [formError, setFormError] = useState(false);
+  const [formErrorKey, setFormErrorKey] = useState<'invalidRoomOrName' | 'invalidPlayerName' | null>(
+    null
+  );
 
-  const [hasJoined, setHasJoined] = useState(() => Boolean(savedSession?.name && (initialRoomCode || savedSession?.roomCode)));
-  const [activeRoomCode, setActiveRoomCode] = useState(() => (initialRoomCode ?? savedSession?.roomCode ?? '').trim().toUpperCase());
+  const [hasJoined, setHasJoined] = useState(() => canRestoreSession);
+  const [activeRoomCode, setActiveRoomCode] = useState(() =>
+    canRestoreSession && savedSession ? savedSession.roomCode : ''
+  );
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [connStatus, setConnStatus] = useState<PlayerConnectionStatus>('connecting');
   const [localAnswers, setLocalAnswers] = useState<Record<string, number>>({});
@@ -102,8 +126,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const clientRef = useRef<PlayerP2PClient | null>(null);
   const joinedIdentityRef = useRef<{ id: string; name: string; avatar: string }>({
     id: playerId,
-    name: savedSession?.name || '',
-    avatar: savedSession?.avatar || DEFAULT_AVATAR,
+    name: canRestoreSession && savedSession ? savedSession.name : '',
+    avatar: canRestoreSession && savedSession ? savedSession.avatar : DEFAULT_AVATAR,
   });
   const finalePoppedRef = useRef(false);
 
@@ -117,9 +141,9 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
     setAvatar(newEmoji);
     joinedIdentityRef.current.avatar = newEmoji;
     try {
-      const current = readSavedSession();
+      const current = readSavedSession(sessionKey);
       if (current) {
-        window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ ...current, avatar: newEmoji }));
+        window.sessionStorage.setItem(sessionKey, JSON.stringify({ ...current, avatar: newEmoji }));
       }
     } catch {}
     clientRef.current?.send({
@@ -207,13 +231,18 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanedRoom = roomCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-    const cleanedName = nickname.trim();
-    if (!cleanedRoom || !cleanedName) {
-      setFormError(true);
+    const nameCheck = validatePlayerName(nickname);
+    if (!cleanedRoom || nameCheck.reason === 'empty') {
+      setFormErrorKey('invalidRoomOrName');
+      return;
+    }
+    if (!nameCheck.valid) {
+      setFormErrorKey('invalidPlayerName');
       return;
     }
 
-    setFormError(false);
+    const cleanedName = nameCheck.cleaned;
+    setFormErrorKey(null);
     soundEffects.playSuccess(isMuted);
     joinedIdentityRef.current = {
       id: playerId,
@@ -227,7 +256,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
         avatar,
         roomCode: cleanedRoom,
       };
-      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionObj));
+      window.sessionStorage.setItem(sessionKey, JSON.stringify(sessionObj));
     } catch {}
     setRoomCode(cleanedRoom);
     setActiveRoomCode(cleanedRoom);
@@ -346,7 +375,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
 
   const handleBackHome = () => {
     try {
-      window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      window.sessionStorage.removeItem(sessionKey);
     } catch {}
     onBackHome?.();
   };
@@ -392,7 +421,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               dir="ltr"
               value={roomCode}
               onChange={(e) => {
-                setFormError(false);
+                setFormErrorKey(null);
                 setRoomCode(e.target.value.toUpperCase());
               }}
               placeholder={t('roomCodePlaceholder')}
@@ -409,11 +438,11 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               type="text"
               value={nickname}
               onChange={(e) => {
-                setFormError(false);
+                setFormErrorKey(null);
                 setNickname(e.target.value);
               }}
               placeholder={t('playerNamePlaceholder')}
-              maxLength={24}
+              maxLength={MAX_PLAYER_NAME_LENGTH}
               className="w-full rounded-2xl border-2 border-amber-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-lg font-bold bg-white outline-none transition-all"
             />
           </div>
@@ -501,9 +530,9 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             </div>
           </div>
 
-          {formError && (
+          {formErrorKey && (
             <p className="rounded-xl bg-rose-50 border border-rose-300 px-3 py-2 text-sm font-bold text-rose-700 text-center">
-              {t('invalidRoomOrName')}
+              {t(formErrorKey)}
             </p>
           )}
 
@@ -690,6 +719,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           pairs={gameState.content.memoryPairs}
           isPaused={gameState.isPaused}
           roundStartTime={gameState.roundStartTime}
+          finishRank={myPlayer?.finishRank}
           onProgress={handleProgress}
         />
       )}
@@ -701,6 +731,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           puzzle={activePuzzle}
           isPaused={gameState.isPaused}
           roundStartTime={gameState.roundStartTime}
+          finishRank={myPlayer?.finishRank}
           onProgress={handleProgress}
         />
       )}

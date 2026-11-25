@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
+  Edit3,
   Heart,
   Send,
   Sparkles,
@@ -92,6 +93,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
   const copy = INPUT_COPY[lang];
   const [draft, setDraft] = useState('');
   const [localSubmitted, setLocalSubmitted] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const effectiveSubmitted = submittedWish?.trim() || localSubmitted;
 
@@ -108,10 +110,11 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
     if (!cleaned) return;
     soundEffects.playSuccess(isMuted);
     setLocalSubmitted(cleaned);
+    setIsEditing(false);
     onSubmitWish(cleaned);
   };
 
-  if (effectiveSubmitted) {
+  if (effectiveSubmitted && !isEditing) {
     return (
       <div
         dir={dir}
@@ -130,6 +133,21 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
           <p className="text-xl font-bold text-slate-800 break-words">
             “{effectiveSubmitted}”
           </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              soundEffects.playTick(isMuted);
+              setDraft(effectiveSubmitted);
+              setIsEditing(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-rose-50 border-2 border-rose-200 text-rose-700 font-bold text-sm shadow-sm transition-colors touch-manipulation"
+          >
+            <Edit3 className="w-4 h-4" />
+            <span>{t('editWishBtn')}</span>
+          </button>
         </div>
 
         <div className="flex items-center justify-center gap-2 text-amber-600 font-bold text-sm">

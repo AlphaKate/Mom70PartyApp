@@ -3,11 +3,13 @@ import { BookOpen, Check, Eye, EyeOff, Hash, Pause, Sparkles, Timer, Trophy, Zap
 import { Language, PuzzleItem } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
 import { getDriveImageEndpoints, soundEffects } from '../../services/contentService';
+import { calcPuzzleSpeedBonus } from '../../services/gameLogic';
 
 interface PuzzleGameProps {
   puzzle: PuzzleItem;
   isPaused: boolean;
   roundStartTime?: number;
+  finishRank?: number;
   onProgress: (progressPercent: number, scoreDelta: number, completed: boolean) => void;
 }
 
@@ -84,7 +86,7 @@ function createShuffledBoard(totalTiles: number): number[] {
 export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   puzzle,
   isPaused,
-  roundStartTime,
+  finishRank,
   onProgress,
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
@@ -97,15 +99,18 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   const [board, setBoard] = useState<number[]>(() => createShuffledBoard(totalTiles));
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
-  const [bestCorrectCount, setBestCorrectCount] = useState(0);
+  const [bestCorrectCount, setBestCorrectCount] = useState<number>(() =>
+    board.filter((tileId, slotIdx) => tileId === slotIdx).length
+  );
   const [showPreview, setShowPreview] = useState(false);
   const [showNumbers, setShowNumbers] = useState(false);
   const [endpointIdx, setEndpointIdx] = useState(0);
 
-  const [startTime] = useState<number>(() => roundStartTime || Date.now());
-  const [now, setNow] = useState<number>(() => Date.now());
+  const [elapsedMs, setElapsedMs] = useState<number>(0);
   const [finalBonusEarned, setFinalBonusEarned] = useState<number | null>(null);
 
+  const elapsedMsRef = useRef<number>(0);
+  const lastTickRef = useRef<number | null>(null);
   const prevKeyRef = useRef<string>(puzzleKey);
 
   useEffect(() => {
@@ -115,11 +120,16 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   useEffect(() => {
     if (prevKeyRef.current !== puzzleKey) {
       prevKeyRef.current = puzzleKey;
-      setBoard(createShuffledBoard(totalTiles));
+      const freshBoard = createShuffledBoard(totalTiles);
+      setBoard(freshBoard);
       setSelectedSlot(null);
       setMoves(0);
-      setBestCorrectCount(0);
+      setBestCorrectCount(freshBoard.filter((tileId, slotIdx) => tileId === slotIdx).length);
       setShowPreview(false);
+      elapsedMsRef.current = 0;
+      lastTickRef.current = Date.now();
+      setElapsedMs(0);
+      setFinalBonusEarned(null);
     }
   }, [puzzleKey, totalTiles]);
 
@@ -130,17 +140,26 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   const progressPercent = totalTiles > 0 ? Math.round((correctCount / totalTiles) * 100) : 100;
   const isSolved = totalTiles > 0 && correctCount === totalTiles;
 
+  // Pause-safe, clock-skew-free active stopwatch timer
   useEffect(() => {
-    if (isSolved || isPaused) return;
+    if (isSolved || isPaused) {
+      lastTickRef.current = null;
+      return;
+    }
+    lastTickRef.current = Date.now();
     const interval = window.setInterval(() => {
-      setNow(Date.now());
-    }, 1000);
+      const now = Date.now();
+      const delta = Math.max(0, now - (lastTickRef.current ?? now));
+      lastTickRef.current = now;
+      elapsedMsRef.current += delta;
+      setElapsedMs(elapsedMsRef.current);
+    }, 250);
     return () => window.clearInterval(interval);
   }, [isSolved, isPaused]);
 
-  const elapsedSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
+  const elapsedSeconds = Math.floor(elapsedMs / 1000);
   // 60-second speed bonus window: up to +250 points
-  const currentSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (250 / 60)));
+  const currentSpeedBonus = calcPuzzleSpeedBonus(elapsedSeconds);
 
   const imageEndpoints = useMemo(
     () => getDriveImageEndpoints(puzzle.imageUrl),
@@ -176,11 +195,12 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
     const nextProgress = Math.round((nextCorrectCount / totalTiles) * 100);
     const completed = nextCorrectCount === totalTiles;
 
-    const earnedSpeedBonus = Math.max(0, Math.round((60 - Math.min(60, elapsedSeconds)) * (250 / 60)));
+    const exactElapsedSec = Math.floor(elapsedMsRef.current / 1000);
+    const earnedSpeedBonus = calcPuzzleSpeedBonus(exactElapsedSec);
     let scoreDelta = 0;
     if (nextCorrectCount > bestCorrectCount) {
       const gainedTiles = nextCorrectCount - bestCorrectCount;
-      scoreDelta = gainedTiles * 25 + (completed ? (200 + earnedSpeedBonus) : 0);
+      scoreDelta = gainedTiles * 25 + (completed ? 200 + earnedSpeedBonus : 0);
       setBestCorrectCount(nextCorrectCount);
     } else if (completed) {
       scoreDelta = 200 + earnedSpeedBonus;
@@ -397,12 +417,23 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
               <Trophy className="w-7 h-7 text-amber-500 shrink-0" />
               <span>{t('puzzleCompleted')}</span>
             </div>
-            {finalBonusEarned !== null && finalBonusEarned > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-white font-black text-sm shadow">
-                <Zap className="w-4 h-4 fill-white" />
-                {t('speedBonusEarned', { bonus: finalBonusEarned })}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {finalBonusEarned !== null && finalBonusEarned > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-white font-black text-sm shadow">
+                  <Zap className="w-4 h-4 fill-white" />
+                  {t('speedBonusEarned', { bonus: finalBonusEarned })}
+                </span>
+              )}
+              {finishRank && finishRank <= 3 && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-600 text-white font-black text-sm shadow">
+                  {finishRank === 1
+                    ? t('arrivalMedalGold')
+                    : finishRank === 2
+                    ? t('arrivalMedalSilver')
+                    : t('arrivalMedalBronze')}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-start gap-2.5 pt-1 border-t border-emerald-200/80">
             <BookOpen className="w-5 h-5 text-rose-500 shrink-0 mt-1" />

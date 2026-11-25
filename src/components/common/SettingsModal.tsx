@@ -154,7 +154,15 @@ export const SettingsModal: React.FC = () => {
                   }`}
                 >
                   <span className="text-base sm:text-lg">
-                    {scale === 'small' ? 'א-' : scale === 'normal' ? 'א' : scale === 'large' ? 'א+' : 'א++'}
+                    {t(
+                      scale === 'small'
+                        ? 'fontSmall'
+                        : scale === 'normal'
+                        ? 'fontNormal'
+                        : scale === 'large'
+                        ? 'fontLarge'
+                        : 'fontHuge'
+                    )}
                   </span>
                   <span className="text-[11px] font-bold mt-0.5">{t(labelKey)}</span>
                   <span className="text-[9px] opacity-70 font-mono">{sizeText}</span>

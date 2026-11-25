@@ -44,6 +44,14 @@ import {
   soundEffects,
 } from '../../services/contentService';
 import { HostConnectionStatus, HostP2PManager } from '../../services/p2pService';
+import {
+  calcTriviaPoints,
+  getArrivalMedalBonus,
+  normalizeRoomCode,
+  sortLeaderboard,
+  sortRacePlayers,
+  STAGE_SEQUENCE,
+} from '../../services/gameLogic';
 import { GamePhase, GameState, Language, P2PMessage, Player } from '../../types/game';
 import { AccessibilityBar } from '../common/AccessibilityBar';
 import { SpotifyPlayer } from '../common/SpotifyPlayer';
@@ -54,16 +62,6 @@ export interface HostDashboardProps {
   compact?: boolean;
   onBackHome?: () => void;
 }
-
-const STAGE_SEQUENCE: GamePhase[] = [
-  'LOBBY',
-  'MEMORY',
-  'PUZZLE',
-  'TRIVIA',
-  'QUOTES',
-  'WISHES',
-  'FINALE',
-];
 
 const PHASE_LABEL_KEYS: Record<GamePhase, TranslationKey> = {
   SETUP: 'phaseSetup',
@@ -132,23 +130,6 @@ const OPTION_BADGE_CLASSES = [
 ];
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
-
-function generateRoomCode(): string {
-  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-  let suffix = '';
-  for (let i = 0; i < 2; i += 1) {
-    suffix += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return `70${suffix}`;
-}
-
-function normalizeRoomCode(code?: string): string {
-  const cleaned = (code ?? '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, '');
-  return cleaned || generateRoomCode();
-}
 
 function firePartyConfetti(): void {
   try {
@@ -288,9 +269,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           soundEffects.playSuccess(isMutedRef.current);
           const alreadyFinished = Object.values(prev.players).filter((p) => p.completedCurrentGame).length;
           finishRank = alreadyFinished + 1;
-          if (finishRank === 1) medalBonus = 100;
-          else if (finishRank === 2) medalBonus = 60;
-          else if (finishRank === 3) medalBonus = 30;
+          medalBonus = getArrivalMedalBonus(finishRank);
         }
 
         const clampedProgress = Math.max(0, Math.min(100, Math.round(progress)));
@@ -323,10 +302,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           prev.phase === 'QUOTES' ? prev.content.quoteQuestions : prev.content.triviaQuestions;
         const question = pool[prev.currentQuestionIndex];
         const isCorrect = question ? answerIndex === question.correctIndex : false;
-        const speedBonus = isCorrect
-          ? Math.max(0, Math.round((25000 - Math.min(25000, Math.max(0, timeMs))) / 250))
-          : 0;
-        const earnedPoints = isCorrect ? 100 + speedBonus : 0;
+        const earnedPoints = calcTriviaPoints(isCorrect, timeMs);
 
         soundEffects.playTick(isMutedRef.current);
 
@@ -456,9 +432,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           if (completed && !chosen.completedCurrentGame) {
             const alreadyFinished = Object.values(prev.players).filter((p) => p.completedCurrentGame).length;
             finishRank = alreadyFinished + 1;
-            if (finishRank === 1) medalBonus = 100;
-            else if (finishRank === 2) medalBonus = 60;
-            else if (finishRank === 3) medalBonus = 30;
+            medalBonus = getArrivalMedalBonus(finishRank);
           }
           const scoreDelta = 40 + (completed ? 120 : 0) + medalBonus;
 
@@ -766,21 +740,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
   };
 
   const playersList = useMemo(() => Object.values(gameState.players), [gameState.players]);
-  const sortedLeaderboard = useMemo(
-    () =>
-      [...playersList].sort(
-        (a, b) => b.score - a.score || b.progress - a.progress || a.name.localeCompare(b.name)
-      ),
-    [playersList]
-  );
+  const sortedLeaderboard = useMemo(() => sortLeaderboard(playersList), [playersList]);
 
-  const racePlayers = useMemo(
-    () =>
-      [...playersList].sort(
-        (a, b) => b.progress - a.progress || b.score - a.score || a.name.localeCompare(b.name)
-      ),
-    [playersList]
-  );
+  const racePlayers = useMemo(() => sortRacePlayers(playersList), [playersList]);
 
   const momNameDisplay = gameState.content.momName[lang] || gameState.content.momName.en;
 

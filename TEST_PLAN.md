@@ -6,11 +6,11 @@
 | פרט | ערך |
 | :--- | :--- |
 | **שם המסמך** | Software Test Plan & Software Test Description (STP / STD) |
-| **גרסת מסמך** | 1.0 (סופי לאחר תיקוני קוד ואימות) |
+| **גרסת מסמך** | 1.1 (מעודכן לאחר השלמת כל הפערים והרחבת חבילת הבדיקות) |
 | **תאריך הפקה** | נובמבר 2026 |
 | **מסמך דרישות מקושר** | [REQUIREMENTS.md](./REQUIREMENTS.md) |
 | **מאגר קוד (Repository)** | [GitHub - Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp) |
-| **סטטוס ריצת בדיקות אוטומטיות** | **14 / 14 עברו בהצלחה (100% Pass Rate)** |
+| **סטטוס ריצת בדיקות אוטומטיות** | **18 / 18 עברו בהצלחה (100% Pass Rate — בדיקת קוד ייצור אמיתי)** |
 
 ---
 
@@ -95,8 +95,17 @@ flowchart LR
    - יציאה יזומה למסך הראשי מנקה את הסשן באופן מסודר.
 5. **השלמת מפתחות תרגום בשלוש השפות (`REQ-GEN-001`):**
    - עודכן `translations.ts` עם מפתחות `speedBonusLabel`, `speedBonusEarned`, `timeElapsed`, `secondsUnit`, `arrivalMedalGold/Silver/Bronze`, `arrivalOrder` בעברית, רוסית ואנגלית.
-6. **הקמת תשתית בדיקות אוטומטית:**
-   - נוצר קובץ `tests/run-tests.mjs` והוגדר סקריפט `npm test` ב-`package.json` המריץ 14 בדיקות אינטגרציה מקיפות.
+6. **הקמת תשתית בדיקות אוטומטית על קוד ייצור אמיתי (`src/services/gameLogic.ts` + `tests/run-tests.mjs`):**
+   - הוצאו כל חישובי הניקוד, המדליות, המיון ואימות השם למודול ייעודי `src/services/gameLogic.ts`, כך ש-`npm test` בודק ישירות את פונקציות הייצור, את `HostP2PManager` + `PlayerP2PClient`, את `QRCodeSVG`, את `MomCelebrationIcon`, ואת פענוח Google Drive / Sheets / Spotify.
+7. **השלמת פערי עומק ובאגי קצה שזוהו בביקורת שנייה:**
+   - **טיימר עמיד להשהיה והפרשי שעונים (`MemoryGame.tsx`, `PuzzleGame.tsx`):** הוחלף חישוב `Date.now() - roundStartTime` בטיימר פעיל המצטבר רק כשהמשחק אינו מושהה — מונע פגיעה בבונוס בעת Pause ומבטל תלות בסנכרון שעונים בין הטלוויזיה לסמארטפון.
+   - **תיקון ניקוד פאזל התחלתי (`PuzzleGame.tsx`):** `bestCorrectCount` מאותחל למספר האריחים שכבר במקום הנכון בערבוב הראשוני, למניעת ניקוד יתר במהלך הראשון.
+   - **סדר מרוץ מדויק לפי מדליות (`HostDashboard.tsx` + `PlayerClient.tsx`):** מיון `sortRacePlayers` מציב את מקומות 1, 2 ו-3 בראש הרשימה לפי סדר הגעה אמיתי, ותג המדליה מוצג גם במסך השחקן בנייד.
+   - **אימות שם שחקן ומגבלת 15 תווים (`REQ-PLY-001`):** `maxLength={15}` ואימות `validatePlayerName` החוסם תווים לא חוקיים עם הודעת שגיאה מתורגמת.
+   - **בידוד סשן `sessionStorage` מול URL חדש ומצב Demo (`REQ-PLY-004`):** מפתח נפרד ל-Split Demo, ואי-דריסה של קוד חדר חדש שנסרק ב-QR.
+   - **עריכת ברכה לאחר שליחה (`REQ-WISH-001`):** נוסף כפתור "עריכת הברכה / עדכון" במסך אישור השליחה של `PlayerWishInput`.
+   - **תיקון תווית פונט רב-לשונית ב-`SettingsModal.tsx` וניגודיות Dark Mode ב-`index.css` (`REQ-GEN-001`, `REQ-GEN-005`):** שימוש בתרגומים `A- / А- / א-` והשלמת כללי Dark Mode לכל התגים והבאדג'ים.
+   - **התאמת עיכוב היפוך קלפים ל-800ms (`REQ-MEM-003`).**
 
 ---
 
@@ -208,3 +217,68 @@ flowchart LR
 | **TC-09-02** | REQ-COMP-002 | בדיקת מכשירי Android (Chrome מובייל). | רספונסיביות מלאה, כפתורים גדולים (מעל 48px), תמיכה ב-P2P סלולרי. | עבר בדיקה תחת מגוון רזולוציות מובייל. | **עבר (Pass)** |
 | **TC-09-03** | REQ-COMP-003 | בדיקת מסך טלוויזיה / דסקטופ (1920x1080 עד 4K). | טקסטים גדולים וקריאים מרחוק, פריסה רחבה, ללא עיוות פרופורציות. | רשת Grid מותאמת למסכי TV רחבים. | **עבר (Pass)** |
 | **TC-09-04** | REQ-PERF-001 | השהיית סנכרון P2P בין שחקן למארח ברשת סלולרית. | זמני תגובה ממוצעים מתחת ל-200ms בערוץ WebRTC DataChannel. | תעבורת JSON קלה ללא עומסי רשת. | **עבר (Pass)** |
+
+---
+
+## 5. דוח הרצת הבדיקות האוטומטיות (Automated Test Execution Report)
+
+הרצת פקודת `npm test` (`node ./tests/run-tests.mjs`) הניבה את התוצאות הבאות:
+
+```
+====================================================
+🧪 Starting Comprehensive Automated Tests: Mom v7.0
+====================================================
+
+--- Suite 01: Internationalization & Branding (REQ-GEN-001, 002, 009) ---
+  ✅ PASS: TC-GEN-01: Translations dictionary has all 3 required languages (he, ru, en)
+  ✅ PASS: TC-GEN-02: 100% key parity across he, ru, en with no empty strings
+  ✅ PASS: TC-GEN-03: translate() interpolation and localized card-back / font glyphs
+  ✅ PASS: TC-GEN-04: MomCelebrationIcon renders pure inline SVG (no external <img> for iOS Safari)
+
+--- Suite 02: Player Onboarding, Validation & Avatars (REQ-PLY-001, 002) ---
+  ✅ PASS: TC-PLY-01: Avatars catalog contains exactly 32 unique avatars across 4 categories
+  ✅ PASS: TC-PLY-02: Every avatar has unique ID and translated display names in he, ru, en
+  ✅ PASS: TC-PLY-03: validatePlayerName enforces REQ-PLY-001 (1..15 chars, rejects empty/illegal)
+
+--- Suite 03: Production Scoring, Medals & Race Sorting (REQ-MEM, REQ-PUZ, REQ-TRIV) ---
+  ✅ PASS: TC-SCORE-01: Production calcTriviaSpeedBonus & calcTriviaPoints (REQ-TRIV-004)
+  ✅ PASS: TC-SCORE-02: Production calcMemorySpeedBonus (REQ-MEM-004: up to +200 in 60s)
+  ✅ PASS: TC-SCORE-03: Production calcPuzzleSpeedBonus (REQ-PUZ-004: up to +250 in 60s)
+  ✅ PASS: TC-SCORE-04: Production getArrivalMedalBonus (REQ-MEM-006, REQ-PUZ-005)
+  ✅ PASS: TC-SCORE-05: sortRacePlayers orders 1st/2nd/3rd finishers strictly by arrival rank
+
+--- Suite 04: Content, Drive, Sheets & Spotify Services (REQ-HOST-003..005, REQ-GEN-008) ---
+  ✅ PASS: TC-CONT-01: Default game content has 6+ memory pairs, puzzles, trivia & quotes in 3 languages
+  ✅ PASS: TC-CONT-02: Google Drive folder/file extraction, fallback endpoints & recursive HTML parser
+  ✅ PASS: TC-CONT-03: Google Sheets ID extractor & Spotify embed normalizer
+
+--- Suite 05: Room Codes, QR Code SVG & Live P2P Messaging (REQ-HOST-001, 002, 006, 008) ---
+  ✅ PASS: TC-HOST-01: Production generateRoomCode & normalizeRoomCode + STAGE_SEQUENCE
+  ✅ PASS: TC-HOST-02: Local QRCodeSVG renders valid ISO/IEC 18004 SVG without external API
+  ✅ PASS: TC-P2P-01: HostP2PManager <-> PlayerP2PClient full message round-trip (JOIN, STATE, PROGRESS, ANSWER, WISH)
+
+====================================================
+📊 Test Execution Summary: 18 Passed | 0 Failed
+====================================================
+```
+
+בנוסף, בדיקת בנייה מלאה (`npm run build`: `tsc && vite build`) הסתיימה בהצלחה מלאה:
+- **0 שגיאות קומפילציה.**
+- **2,154 מודולים עובדו בהצלחה.**
+- **משקל קוד מכווץ (gzip): `135.04 KB`** (עומד בדרישת `REQ-PERF-003` של מתחת ל-250KB).
+
+---
+
+## 6. הנחיות לביצוע בדיקת קבלה חיה (Live Acceptance Run Guide)
+
+לביצוע בדיקת קבלה חיה ומלאה מקצה לקצה לפני אירוע יום ההולדת:
+
+1. **בדיקה מהירה במסך מפוצל (Single-Machine Demo):**
+   - פתחו את הדפדפן בכתובת: `http://localhost:5173/?mode=split` (או בסביבת הפריסה החיה עם `?mode=split`).
+   - צד ימין מציג את מסך הטלוויזיה (מארח) וצד שמאל מציג את הסמארטפון של השחקן.
+   - לחצו על "התחל משחק" בטלוויזיה, שחקו בזיכרון ובפאזל בנייד, ענו על טריוויה, שילחו ברכה (ונסו גם לערוך אותה) וצפו בפודיום ובקונפטי.
+2. **בדיקה עם סמארטפונים אמיתיים (Multi-Device Event Test):**
+   - פתחו את מסך המארח בטלוויזיה: `https://alphakate.github.io/Mom70PartyApp/?mode=host`.
+   - סרקו עם 2-3 סמארטפונים את קוד ה-QR המופיע על גבי הטלוויזיה.
+   - ודאו שהשחקנים מופיעים בלובי החי, ושחקו סבב משחק מלא.
+   - נסו לרענן את אחד הטלפונים באמצע המשחק – ודאו שהוא חוזר לאותו שלב בדיוק.
