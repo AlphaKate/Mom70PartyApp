@@ -974,8 +974,18 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               )}
 
               {drivePreviewChecked && previewDrivePhotos.length === 0 && driveUrlInput.trim() && (
-                <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-amber-900">
-                  {t('drivePhotosNotFoundNote')}
+                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 space-y-2.5 text-xs sm:text-sm font-medium text-amber-900">
+                  <p>{t('drivePhotosNotFoundNote')}</p>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs transition-colors shadow-sm"
+                    >
+                      <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>{t('uploadLocalPhotosBtn')}</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
