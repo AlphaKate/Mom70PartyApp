@@ -869,10 +869,15 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                       : 'bg-slate-50 border-slate-200 font-bold'
                   }`}
                 >
-                  <span className="flex items-center gap-2 truncate">
-                    <span>#{idx + 1}</span>
-                    <AvatarDisplay avatar={p.avatar} className="w-5 h-5 shrink-0" />
-                    <span className="truncate">{p.name}</span>
+                  <span className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="shrink-0">#{idx + 1}</span>
+                    <AvatarDisplay avatar={p.avatar} className="w-6 h-6 shrink-0" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate leading-tight">{p.name}</span>
+                      <span className="block text-[11px] font-bold text-rose-600 dark:text-rose-300 truncate leading-tight">
+                        {getAvatarDisplayName(p.avatar, lang)}
+                      </span>
+                    </span>
                   </span>
                   <span className="text-rose-700 shrink-0">
                     {p.score} {t('scoreUnit')}

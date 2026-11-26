@@ -6,11 +6,11 @@
 | פרט | ערך |
 | :--- | :--- |
 | **שם המסמך** | Software Test Plan & Software Test Description (STP / STD) |
-| **גרסת מסמך** | 1.1 (מעודכן לאחר השלמת כל הפערים והרחבת חבילת הבדיקות) |
+| **גרסת מסמך** | 1.2 (מעודכן לגרסה `v001.002.000` — הוספת תיאור אוואטר בפודיום) |
 | **תאריך הפקה** | נובמבר 2026 |
 | **מסמך דרישות מקושר** | [REQUIREMENTS.md](./REQUIREMENTS.md) |
 | **מאגר קוד (Repository)** | [GitHub - Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp) |
-| **סטטוס ריצת בדיקות אוטומטיות** | **27 / 27 עברו בהצלחה (100% Pass Rate — כולל ניהול גרסה `XXX.YYY.ZZZ`, 10–12 תמונות, 5 ברכות + סלפי ו-WebRTC Chunking)** |
+| **סטטוס ריצת בדיקות אוטומטיות** | **28 / 28 עברו בהצלחה (100% Pass Rate — כולל תיאור אוואטר בפודיום ב-3 שפות, ניהול גרסה `XXX.YYY.ZZZ`, 10–12 תמונות, 5 ברכות + סלפי ו-WebRTC Chunking)** |
 
 ---
 
@@ -134,7 +134,7 @@ flowchart LR
 | **TC-02-03** | REQ-GEN-003 | בדיקת בידוד שפה בין צופים (Scoped Scope). | שחקן א' בוחר רוסית ושחקן ב' בוחר עברית; הטלוויזיה נשארת בשפת המארח. | כל לקוח שומר את הגדרתו ב-`localStorage` מבודד. | **עבר (Pass)** |
 | **TC-02-04** | REQ-GEN-004 | שינוי גודל גופן ב-4 רמות (קטן, רגיל, גדול, ענק). | גודל הטקסט בכל המסכים מתעדכן בצורה פרופורציונלית ללא גלישת טקסט. | כל הכפתורים והכרטיסים כוללים עיטוף גמיש (`break-words`). | **עבר (Pass)** |
 | **TC-02-05** | REQ-GEN-005 | החלפה למצב לילה (Dark Mode) ובחזרה ליום (Light). | ממשק כהה מעוצב ללא סנוור עם שמירה ב-`localStorage`. | תצוגה מקדימה חיה במודאל ההגדרות פועלת בצורה תקינה. | **עבר (Pass)** |
-| **TC-02-06** | REQ-GEN-010 | אימות פורמט מספר הגרסה (`XXX.YYY.ZZZ`), תצוגתו בראש כל עמוד, ועדכונו בכל שחרור. | מספר הגרסה ב-`src/constants/version.ts` תואם `^\d{3}\.\d{3}\.\d{3}$` ומוצג בסרגל העליון (`AccessibilityBar`) בכל המסכים בכיוון `LTR`. | אומת אוטומטית ב-`TC-VER-01` ו-`TC-VER-02` (`v001.001.000`). | **עבר (Pass)** |
+| **TC-02-06** | REQ-GEN-010 | אימות פורמט מספר הגרסה (`XXX.YYY.ZZZ`), תצוגתו בראש כל עמוד, ועדכונו בכל שחרור. | מספר הגרסה ב-`src/constants/version.ts` תואם `^\d{3}\.\d{3}\.\d{3}$` ומוצג בסרגל העליון (`AccessibilityBar`) בכל המסכים בכיוון `LTR`. | אומת אוטומטית ב-`TC-VER-01` ו-`TC-VER-02` (`v001.002.000`). | **עבר (Pass)** |
 
 ---
 
@@ -202,9 +202,9 @@ flowchart LR
 
 | מזהה בדיקה | דרישה מקושרת | תיאור הבדיקה ופעולות לביצוע | תוצאה מצופה | תוצאה בפועל | סטטוס |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC-08-01** | REQ-FIN-001 | הצגת פודיום מנצחים (מקומות 1, 2 ו-3) בסיום המשחק. | שלושת המובילים מוצגים על פודיום מדורג עם אוואטרים, שמות וסך הנקודות. | אנימציית עלייה לפודיום פועלת באופן מרשים. | **עבר (Pass)** |
+| **TC-08-01** | REQ-FIN-001 | הצגת פודיום מנצחים (מקומות 1, 2 ו-3) בסיום המשחק כולל תיאור האוואטר. | שלושת המובילים מוצגים על פודיום מדורג עם איור אוואטר, שם שחקן, **תיאור אוואטר מתורגם** (זהה למסך בחירת האוואטר) וסך נקודות — במארח ובשחקן. | אומת אוטומטית ב-3 שפות (`he`, `ru`, `en`) ב-`TC-FIN-01` (`FinalePodium`). | **עבר (Pass)** |
 | **TC-08-02** | REQ-FIN-002 | הפעלת תותח קונפטי חגיגי (Confetti Cannon). | סילוני קונפטי צבעוניים מתפרצים על גבי המסך כולו. | מבוסס ספריית `canvas-confetti` ברישיון MIT. | **עבר (Pass)** |
-| **TC-08-03** | REQ-FIN-003 | גלילה וצפייה בטבלת התוצאות המלאה של כל המשתתפים. | כל האורחים מוצגים לפי דירוגם הסופי ללא השמטה. | רשימת השחקנים נגישה ומסודרת לפי ניקוד יורד. | **עבר (Pass)** |
+| **TC-08-03** | REQ-FIN-003 | גלילה וצפייה בטבלת התוצאות המלאה של כל המשתתפים. | כל האורחים מוצגים לפי דירוגם הסופי כולל איור ותיאור האוואטר המתורגם לצד שמם. | אומת ב-`TC-FIN-01` (`FinalePodium`). | **עבר (Pass)** |
 | **TC-08-04** | REQ-GEN-006 | בדיקת צלילים מובנים: הצלחה, תקתוק שעון, מחיאות כפיים, קונפטי. | כל האפקטים הקוליים מושמעים דרך Web Audio API ללא הורדת קבצי MP3. | צלילים פועלים בצורה חדה ומידית. | **עבר (Pass)** |
 | **TC-08-05** | REQ-GEN-007 | הפעלת כפתור השתקה (Mute) מסרגל הנגישות. | כל הצלילים מושתקים מידית; מצב Mute נשמר גם במעבר בין שלבים. | אומת בלחיצה על כפתור הרמקול בראש המסך. | **עבר (Pass)** |
 
@@ -235,6 +235,8 @@ flowchart LR
   ✅ PASS: TC-GEN-02: 100% key parity across he, ru, en with no empty strings
   ✅ PASS: TC-GEN-03: translate() interpolation and localized card-back / font glyphs
   ✅ PASS: TC-GEN-04: MomCelebrationIcon renders pure inline SVG (no external <img> for iOS Safari)
+  ✅ PASS: TC-VER-01: APP_VERSION strictly matches XXX.YYY.ZZZ format (REQ-GEN-010)
+  ✅ PASS: TC-VER-02: Top header bar (AccessibilityBar) renders vXXX.YYY.ZZZ visibly in LTR
 
 --- Suite 02: Player Onboarding, Validation & Avatars (REQ-PLY-001, 002) ---
   ✅ PASS: TC-PLY-01: Avatars catalog contains exactly 32 unique avatars across 4 categories
@@ -258,15 +260,29 @@ flowchart LR
   ✅ PASS: TC-HOST-02: Local QRCodeSVG renders valid ISO/IEC 18004 SVG without external API
   ✅ PASS: TC-P2P-01: HostP2PManager <-> PlayerP2PClient full message round-trip (JOIN, STATE, PROGRESS, ANSWER, WISH)
 
+--- Suite 06: Multi-Wish (Up to 5) & Live Selfie Support (REQ-WISH-001..003) ---
+  ✅ PASS: TC-WISH-01: Player can submit up to 5 distinct wishes and 6th is cleanly blocked
+  ✅ PASS: TC-WISH-02: Player can edit an existing wish (text & selfie) even at 5/5 quota
+  ✅ PASS: TC-WISH-03: sanitizeSelfieDataUrl validates data:image/ prefix and P2P size cap
+
+--- Suite 07: Large Multi-Photo Memory Game (10–12 Photos), Wire Dedup & WebRTC Chunking ---
+  ✅ PASS: TC-MEDIA-01: Memory Game supports 10–12 uploaded photos without truncation at 8
+  ✅ PASS: TC-MEDIA-02: Wire packing deduplicates 10 photos (3x reduction) and delta omits content (<2KB)
+  ✅ PASS: TC-MEDIA-03: WebRTC chunking splits & reassembles 300KB+ 10-photo payload cleanly
+  ✅ PASS: TC-MEDIA-04: HostP2PManager <-> PlayerP2PClient syncs 10-photo state + late joiner recovery
+
+--- Suite 08: Finale Podium & Avatar Descriptions (REQ-FIN-001, REQ-FIN-003) ---
+  ✅ PASS: TC-FIN-01: FinalePodium displays localized avatar description alongside player name in he, ru, en
+
 ====================================================
-📊 Test Execution Summary: 18 Passed | 0 Failed
+📊 Test Execution Summary: 28 Passed | 0 Failed
 ====================================================
 ```
 
 בנוסף, בדיקת בנייה מלאה (`npm run build`: `tsc && vite build`) הסתיימה בהצלחה מלאה:
 - **0 שגיאות קומפילציה.**
-- **2,154 מודולים עובדו בהצלחה.**
-- **משקל קוד מכווץ (gzip): `135.04 KB`** (עומד בדרישת `REQ-PERF-003` של מתחת ל-250KB).
+- **2,156 מודולים עובדו בהצלחה.**
+- **משקל קוד מכווץ (gzip): `137.64 KB`** (עומד בדרישת `REQ-PERF-003` של מתחת ל-250KB).
 
 ---
 

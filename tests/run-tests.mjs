@@ -82,6 +82,7 @@ try {
   const { APP_VERSION, APP_VERSION_REGEX, isValidAppVersion } = await vite.ssrLoadModule('./src/constants/version.ts');
   const { SettingsProvider } = await vite.ssrLoadModule('./src/context/SettingsContext.tsx');
   const { AccessibilityBar } = await vite.ssrLoadModule('./src/components/common/AccessibilityBar.tsx');
+  const { FinalePodium } = await vite.ssrLoadModule('./src/components/common/FinalePodium.tsx');
 
   // =========================================================================
   console.log('--- Suite 01: Internationalization & Branding (REQ-GEN-001, 002, 009) ---');
@@ -652,6 +653,41 @@ try {
     } finally {
       p1.destroy();
       host.destroy();
+    }
+  });
+
+  // =========================================================================
+  console.log('\n--- Suite 08: Finale Podium & Avatar Descriptions (REQ-FIN-001, REQ-FIN-003) ---');
+
+  await runTest('TC-FIN-01: FinalePodium displays localized avatar description alongside player name in he, ru, en', () => {
+    const samplePlayers = [
+      { id: 'p1', name: 'קתי', avatar: 'fairy_nap', score: 950, progress: 100, completedCurrentGame: true, connected: true },
+      { id: 'p2', name: 'דני', avatar: 'hero_wonder_savta', score: 820, progress: 100, completedCurrentGame: true, connected: true },
+      { id: 'p3', name: 'מאיה', avatar: 'animal_cat_boss', score: 710, progress: 100, completedCurrentGame: true, connected: true },
+      { id: 'p4', name: 'אור', avatar: 'ussr_cosmonaut', score: 500, progress: 100, completedCurrentGame: true, connected: true },
+    ];
+
+    for (const lang of ['he', 'ru', 'en']) {
+      const html = renderToStaticMarkup(
+        React.createElement(
+          SettingsProvider,
+          { defaultLang: lang, applyToDocument: false },
+          React.createElement(FinalePodium, { players: samplePlayers })
+        )
+      );
+
+      assert.ok(html.includes('data-testid="podium-avatar-desc-1"'), `Missing 1st place avatar desc in ${lang}`);
+      assert.ok(html.includes('data-testid="podium-avatar-desc-2"'), `Missing 2nd place avatar desc in ${lang}`);
+      assert.ok(html.includes('data-testid="podium-avatar-desc-3"'), `Missing 3rd place avatar desc in ${lang}`);
+
+      for (const p of samplePlayers) {
+        const expectedDesc = getAvatarDisplayName(p.avatar, lang);
+        assert.ok(html.includes(p.name), `Player name "${p.name}" missing in ${lang} podium`);
+        assert.ok(
+          html.includes(expectedDesc),
+          `Avatar description "${expectedDesc}" missing in ${lang} podium for ${p.name}`
+        );
+      }
     }
   });
 
