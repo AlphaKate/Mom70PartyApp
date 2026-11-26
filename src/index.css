@@ -23,7 +23,7 @@
   }
 
   html.dark body {
-    background: linear-gradient(155deg, #0a0e1a 0%, #171126 50%, #1b0d1e 100%);
+    background: linear-gradient(155deg, #0b1120 0%, #131629 50%, #1a1228 100%);
     color: #f8fafc;
   }
 
@@ -43,124 +43,180 @@
 }
 
 .settings-scope-container.dark {
-  background: linear-gradient(155deg, #0a0e1a 0%, #171126 50%, #1b0d1e 100%);
+  background: linear-gradient(155deg, #0b1120 0%, #131629 50%, #1a1228 100%);
+  color: #f8fafc;
+  border-radius: 1.25rem;
+}
+
+/* Automatic Dark Mode Fallbacks unlayered with :where(.dark) (specificity 0,1,0): skips Tailwind variant synthesis, overrides plain utility classes by source order, and always yields to explicit dark:* utilities (0,2,0) */
+:where(.dark) .bg-white\/95,
+:where(.dark) .bg-white\/90,
+:where(.dark) .bg-white\/80,
+:where(.dark) .bg-white\/70,
+:where(.dark) .bg-white\/60,
+:where(.dark) .bg-white\/50,
+:where(.dark) .bg-white\/40,
+:where(.dark) .bg-white {
+  background-color: rgba(15, 23, 42, 0.94);
+  color: #f8fafc;
+  border-color: rgba(71, 85, 105, 0.75);
+}
+
+:where(.dark) .text-slate-900,
+:where(.dark) .text-slate-800 {
   color: #f8fafc;
 }
 
-/* Automatic Dark Mode Enhancements for Cards & Containers */
-.dark .bg-white\/95,
-.dark .bg-white\/90,
-.dark .bg-white\/80,
-.dark .bg-white {
-  background-color: rgba(15, 23, 42, 0.94) !important;
-  color: #f8fafc !important;
-  border-color: rgba(51, 65, 85, 0.7) !important;
+:where(.dark) .text-slate-700,
+:where(.dark) .text-slate-600 {
+  color: #cbd5e1;
 }
 
-.dark .text-slate-900,
-.dark .text-slate-800 {
-  color: #f8fafc !important;
+:where(.dark) .text-slate-500 {
+  color: #94a3b8;
 }
 
-.dark .text-slate-700,
-.dark .text-slate-600 {
-  color: #cbd5e1 !important;
+:where(.dark) .bg-slate-50,
+:where(.dark) .bg-slate-100,
+:where(.dark) .bg-slate-100\/60,
+:where(.dark) .bg-slate-200 {
+  background-color: rgba(30, 41, 59, 0.9);
+  border-color: rgba(71, 85, 105, 0.8);
 }
 
-.dark .text-rose-900 {
-  color: #fda4af !important;
+:where(.dark) .bg-rose-50,
+:where(.dark) .bg-rose-50\/90,
+:where(.dark) .bg-rose-50\/80,
+:where(.dark) .bg-rose-50\/70,
+:where(.dark) .bg-rose-50\/60,
+:where(.dark) .bg-rose-50\/40,
+:where(.dark) .bg-rose-100 {
+  background-color: rgba(30, 41, 59, 0.92);
+  border-color: rgba(244, 63, 94, 0.45);
 }
 
-.dark .bg-rose-50,
-.dark .bg-rose-50\/80,
-.dark .bg-rose-50\/70,
-.dark .bg-rose-50\/60 {
-  background-color: rgba(136, 19, 55, 0.28) !important;
-  border-color: rgba(225, 29, 72, 0.45) !important;
+:where(.dark) .bg-amber-50,
+:where(.dark) .bg-amber-50\/80,
+:where(.dark) .bg-amber-50\/70,
+:where(.dark) .bg-amber-50\/50,
+:where(.dark) .bg-amber-50\/40,
+:where(.dark) .bg-amber-50\/30,
+:where(.dark) .bg-amber-100,
+:where(.dark) .bg-amber-100\/80,
+:where(.dark) .bg-amber-100\/70 {
+  background-color: rgba(30, 41, 59, 0.92);
+  border-color: rgba(245, 158, 11, 0.45);
 }
 
-.dark .bg-amber-50,
-.dark .bg-amber-50\/80,
-.dark .bg-amber-50\/70,
-.dark .bg-amber-100 {
-  background-color: rgba(120, 53, 15, 0.28) !important;
-  border-color: rgba(217, 119, 6, 0.45) !important;
+:where(.dark) .bg-emerald-50,
+:where(.dark) .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.5);
+  color: #a7f3d0;
+  border-color: rgba(16, 185, 129, 0.45);
 }
 
-.dark .bg-slate-50,
-.dark .bg-slate-100 {
-  background-color: rgba(30, 41, 59, 0.85) !important;
-  border-color: rgba(51, 65, 85, 0.8) !important;
+:where(.dark) .bg-orange-100 {
+  background-color: rgba(124, 45, 18, 0.5);
+  color: #fed7aa;
+  border-color: rgba(249, 115, 22, 0.45);
 }
 
-.dark .bg-emerald-50,
-.dark .bg-emerald-100 {
-  background-color: rgba(6, 78, 59, 0.45) !important;
-  color: #a7f3d0 !important;
-  border-color: rgba(16, 185, 129, 0.45) !important;
+:where(.dark) .bg-sky-50,
+:where(.dark) .bg-sky-100 {
+  background-color: rgba(12, 74, 110, 0.5);
+  color: #bae6fd;
+  border-color: rgba(56, 189, 248, 0.45);
 }
 
-.dark .bg-rose-100 {
-  background-color: rgba(136, 19, 55, 0.45) !important;
-  color: #fecdd3 !important;
-  border-color: rgba(244, 63, 94, 0.45) !important;
+:where(.dark) .bg-fuchsia-50,
+:where(.dark) .bg-fuchsia-50\/90,
+:where(.dark) .bg-fuchsia-100 {
+  background-color: rgba(112, 26, 117, 0.5);
+  color: #f5d0fe;
+  border-color: rgba(217, 70, 239, 0.45);
 }
 
-.dark .bg-orange-100 {
-  background-color: rgba(124, 45, 18, 0.45) !important;
-  color: #fed7aa !important;
-  border-color: rgba(249, 115, 22, 0.45) !important;
+:where(.dark) .bg-purple-50,
+:where(.dark) .bg-purple-100 {
+  background-color: rgba(88, 28, 135, 0.5);
+  color: #e9d5ff;
+  border-color: rgba(168, 85, 247, 0.45);
 }
 
-.dark .bg-sky-50,
-.dark .bg-sky-100 {
-  background-color: rgba(12, 74, 110, 0.45) !important;
-  color: #bae6fd !important;
-  border-color: rgba(56, 189, 248, 0.45) !important;
+:where(.dark) .bg-violet-50,
+:where(.dark) .bg-violet-50\/90,
+:where(.dark) .bg-violet-100 {
+  background-color: rgba(76, 29, 149, 0.5);
+  color: #ddd6fe;
+  border-color: rgba(139, 92, 246, 0.45);
 }
 
-.dark .bg-fuchsia-50,
-.dark .bg-fuchsia-100 {
-  background-color: rgba(112, 26, 117, 0.45) !important;
-  color: #f5d0fe !important;
-  border-color: rgba(217, 70, 239, 0.45) !important;
+:where(.dark) .text-amber-950,
+:where(.dark) .text-amber-900,
+:where(.dark) .text-amber-800,
+:where(.dark) .text-amber-700 {
+  color: #fde68a;
 }
 
-.dark .text-amber-900,
-.dark .text-amber-800 {
-  color: #fde68a !important;
+:where(.dark) .text-emerald-950,
+:where(.dark) .text-emerald-900,
+:where(.dark) .text-emerald-800,
+:where(.dark) .text-emerald-700 {
+  color: #a7f3d0;
 }
 
-.dark .text-emerald-800,
-.dark .text-emerald-700 {
-  color: #6ee7b7 !important;
+:where(.dark) .text-rose-950,
+:where(.dark) .text-rose-900,
+:where(.dark) .text-rose-800,
+:where(.dark) .text-rose-700,
+:where(.dark) .text-rose-600 {
+  color: #fecdd3;
 }
 
-.dark .text-rose-800,
-.dark .text-rose-700 {
-  color: #fda4af !important;
+:where(.dark) .text-orange-950,
+:where(.dark) .text-orange-900,
+:where(.dark) .text-orange-800 {
+  color: #fed7aa;
 }
 
-.dark .text-orange-900,
-.dark .text-orange-800 {
-  color: #fdba74 !important;
+:where(.dark) .text-sky-950,
+:where(.dark) .text-sky-900,
+:where(.dark) .text-sky-800,
+:where(.dark) .text-sky-700 {
+  color: #bae6fd;
 }
 
-.dark .text-sky-900,
-.dark .text-sky-950 {
-  color: #7dd3fc !important;
+:where(.dark) .text-fuchsia-950,
+:where(.dark) .text-fuchsia-900,
+:where(.dark) .text-fuchsia-800,
+:where(.dark) .text-fuchsia-700 {
+  color: #f5d0fe;
 }
 
-.dark .text-fuchsia-950,
-.dark .text-fuchsia-900 {
-  color: #f0abfc !important;
+:where(.dark) .text-purple-950,
+:where(.dark) .text-purple-900,
+:where(.dark) .text-purple-800 {
+  color: #e9d5ff;
 }
 
-.dark input[type='text'],
-.dark textarea {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-  border-color: #475569 !important;
+:where(.dark) .text-violet-950,
+:where(.dark) .text-violet-900,
+:where(.dark) .text-violet-800 {
+  color: #ddd6fe;
+}
+
+:where(.dark) input[type='text'],
+:where(.dark) input[type='url'],
+:where(.dark) textarea {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+:where(.dark) input[type='text']::placeholder,
+:where(.dark) input[type='url']::placeholder,
+:where(.dark) textarea::placeholder {
+  color: #94a3b8;
 }
 
 @keyframes floatGentle {

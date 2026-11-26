@@ -237,10 +237,10 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
     return (
       <div
         dir={dir}
-        className="w-full max-w-xl mx-auto rounded-3xl bg-white/90 border-2 border-amber-200 p-8 text-center shadow-lg"
+        className="w-full max-w-xl mx-auto rounded-3xl bg-white/90 dark:bg-slate-900/90 border-2 border-amber-200 dark:border-slate-700 p-8 text-center shadow-lg"
       >
         <Sparkles className="w-10 h-10 text-amber-500 mx-auto mb-3 animate-pulse" />
-        <p className="text-lg font-bold text-slate-700">{copy.noCards}</p>
+        <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{copy.noCards}</p>
       </div>
     );
   }
@@ -255,32 +255,32 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   return (
     <div dir={dir} className="relative w-full max-w-3xl mx-auto select-none space-y-4">
       {/* Header & Progress */}
-      <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 p-4 shadow-md">
+      <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 p-4 shadow-md">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
-            <h2 className="text-xl font-extrabold text-rose-700">{t('memoryTitle')}</h2>
-            <p className="text-sm text-slate-600">{copy.subtitle}</p>
+            <h2 className="text-xl font-extrabold text-rose-700 dark:text-rose-300">{t('memoryTitle')}</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{copy.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-800 font-bold text-sm">
-              <Timer className="w-4 h-4 text-slate-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm">
+              <Timer className="w-4 h-4 text-slate-500 dark:text-slate-300" />
               {elapsedSeconds} {t('secondsUnit')}
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
-              <Zap className="w-4 h-4 text-amber-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 font-bold text-sm">
+              <Zap className="w-4 h-4 text-amber-600 dark:text-amber-300" />
               +{currentSpeedBonus}
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 font-bold text-sm">
               <Check className="w-4 h-4" />
               {t('memoryPairsFound')}: {matchedCount}/{totalPairs}
             </span>
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-rose-100 text-rose-900 font-bold text-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-rose-100 dark:bg-rose-950/70 text-rose-900 dark:text-rose-200 font-bold text-sm">
               {t('memoryMoves')}: {moves}
             </span>
           </div>
         </div>
 
-        <div className="w-full h-3.5 bg-rose-100 rounded-full overflow-hidden">
+        <div className="w-full h-3.5 bg-rose-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-500 transition-all duration-500 rounded-full"
             style={{ width: `${progressPercent}%` }}
@@ -387,13 +387,13 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
                       WebkitBackfaceVisibility: 'hidden',
                       transform: 'rotateY(180deg)',
                     }}
-                    className={`absolute inset-0 rounded-2xl bg-white overflow-hidden flex flex-col shadow-md border-4 transition-colors ${
+                    className={`absolute inset-0 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden flex flex-col shadow-md border-4 transition-colors ${
                       isMatched
-                        ? 'border-emerald-500 ring-4 ring-emerald-200'
+                        ? 'border-emerald-500 ring-4 ring-emerald-200 dark:ring-emerald-500/40'
                         : 'border-amber-400'
                     }`}
                   >
-                    <div className="relative flex-1 min-h-0 bg-amber-50/70 overflow-hidden flex items-center justify-center p-1">
+                    <div className="relative flex-1 min-h-0 bg-amber-50/70 dark:bg-slate-800 overflow-hidden flex items-center justify-center p-1">
                       {activeImageUrl && !imgFailed ? (
                         <img
                           src={activeImageUrl}
@@ -413,7 +413,7 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
                           className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-amber-600 p-2">
+                        <div className="flex flex-col items-center justify-center text-amber-600 dark:text-amber-300 p-2">
                           <ImageOff className="w-7 h-7 mb-1 opacity-70" />
                           <span className="text-xs font-bold text-center">{label}</span>
                         </div>
@@ -429,8 +429,8 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
                     <div
                       className={`px-2 py-1.5 text-center border-t ${
                         isMatched
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                          : 'bg-white border-slate-100 text-slate-800'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200'
+                          : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-100'
                       }`}
                     >
                       <span className="block text-xs sm:text-sm font-bold leading-tight break-words line-clamp-2">

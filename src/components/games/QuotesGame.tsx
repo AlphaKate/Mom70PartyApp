@@ -59,10 +59,10 @@ const COPY: Record<
 };
 
 const QUOTE_CARD_THEMES = [
-  'border-fuchsia-300 bg-fuchsia-50/90 hover:bg-fuchsia-100 text-fuchsia-950',
-  'border-violet-300 bg-violet-50/90 hover:bg-violet-100 text-violet-950',
-  'border-rose-300 bg-rose-50/90 hover:bg-rose-100 text-rose-950',
-  'border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-950',
+  'border-fuchsia-300 dark:border-fuchsia-500/50 bg-fuchsia-50/90 dark:bg-slate-800/95 hover:bg-fuchsia-100 dark:hover:bg-slate-700 text-fuchsia-950 dark:text-slate-100',
+  'border-violet-300 dark:border-violet-500/50 bg-violet-50/90 dark:bg-slate-800/95 hover:bg-violet-100 dark:hover:bg-slate-700 text-violet-950 dark:text-slate-100',
+  'border-rose-300 dark:border-rose-500/50 bg-rose-50/90 dark:bg-slate-800/95 hover:bg-rose-100 dark:hover:bg-slate-700 text-rose-950 dark:text-slate-100',
+  'border-amber-300 dark:border-amber-500/50 bg-amber-50/90 dark:bg-slate-800/95 hover:bg-amber-100 dark:hover:bg-slate-700 text-amber-950 dark:text-slate-100',
 ];
 
 export const QuotesGame: React.FC<QuotesGameProps> = ({
@@ -163,7 +163,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
     <div dir={dir} className="relative w-full max-w-2xl mx-auto select-none space-y-5">
       {/* Speech Bubble Scenario Card */}
       <div className="relative">
-        <div className="rounded-3xl bg-gradient-to-br from-rose-50 via-white to-fuchsia-50 border-2 border-fuchsia-300 p-5 sm:p-6 shadow-xl space-y-3">
+        <div className="rounded-3xl bg-gradient-to-br from-rose-50 via-white to-fuchsia-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 border-2 border-fuchsia-300 dark:border-fuchsia-500/50 p-5 sm:p-6 shadow-xl space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-fuchsia-600 text-white font-extrabold text-sm shadow-sm">
               <MessageCircle className="w-4 h-4" />
@@ -171,22 +171,22 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
             </span>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-fuchsia-100 text-fuchsia-900 font-bold text-sm">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-fuchsia-100 dark:bg-fuchsia-950/70 text-fuchsia-900 dark:text-fuchsia-200 font-bold text-sm">
                 {copy.scenario} {questionIndex + 1} {t('ofTotal')}{' '}
                 {Math.max(1, totalQuestions)}
               </span>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-extrabold text-sm transition-all ${
                   hasAnswered
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/60'
                     : remainingSeconds <= 5 && !revealAnswer
-                    ? 'bg-rose-100 text-rose-700 animate-pulse'
-                    : 'bg-slate-100 text-slate-700'
+                    ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-200 animate-pulse'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
                 }`}
               >
                 {hasAnswered ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>{t('quotesAnswerLockedBadge')}</span>
                   </>
                 ) : (
@@ -200,7 +200,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
             </div>
           </div>
 
-          <div className="w-full h-2.5 bg-fuchsia-100 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-fuchsia-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full ${hasAnswered ? 'bg-emerald-500' : 'bg-gradient-to-r from-fuchsia-500 via-rose-400 to-amber-400'} transition-all duration-150 rounded-full`}
               style={{ width: `${hasAnswered ? 100 : remainingPercent}%` }}
@@ -211,13 +211,13 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
             <img
               src={question.imageUrl}
               alt=""
-              className="w-full max-h-44 object-contain rounded-2xl mx-auto bg-white/80 border border-fuchsia-100"
+              className="w-full max-h-44 object-contain rounded-2xl mx-auto bg-white/80 dark:bg-slate-900 border border-fuchsia-100 dark:border-slate-700"
             />
           )}
 
           <div className="relative py-2 px-3 sm:px-6 text-center">
-            <Quote className="w-7 h-7 text-fuchsia-300 mx-auto mb-1 opacity-80" />
-            <h2 className="text-xl sm:text-2xl font-black text-slate-800 leading-snug">
+            <Quote className="w-7 h-7 text-fuchsia-300 dark:text-fuchsia-400 mx-auto mb-1 opacity-80" />
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white leading-snug">
               {question.question[lang]}
             </h2>
           </div>
@@ -225,7 +225,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
 
         {/* Speech Bubble Pointer Tail */}
         <div className="flex justify-center -mt-1">
-          <div className="w-6 h-6 bg-white border-r-2 border-b-2 border-fuchsia-300 rotate-45 shadow-sm" />
+          <div className="w-6 h-6 bg-white dark:bg-slate-800 border-r-2 border-b-2 border-fuchsia-300 dark:border-fuchsia-500/50 rotate-45 shadow-sm" />
         </div>
       </div>
 
@@ -247,7 +247,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
                 'bg-rose-500 border-2 border-rose-700 text-white ring-4 ring-rose-300 opacity-90';
             } else {
               cardClass =
-                'bg-slate-100 border-2 border-slate-200 text-slate-400 opacity-55';
+                'bg-slate-100 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 opacity-55';
             }
           } else if (hasAnswered) {
             if (isSelected) {
@@ -272,12 +272,12 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
                 <span
                   className={`mt-0.5 w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-black text-sm ${
                     revealAnswer && isCorrect
-                      ? 'bg-white text-emerald-600'
+                      ? 'bg-white dark:bg-white text-emerald-600 dark:text-emerald-700'
                       : revealAnswer && isSelected && !isCorrect
-                      ? 'bg-white text-rose-600'
+                      ? 'bg-white dark:bg-white text-rose-600 dark:text-rose-700'
                       : !revealAnswer && isSelected
-                      ? 'bg-white text-fuchsia-700'
-                      : 'bg-white/90 text-fuchsia-700 shadow-sm'
+                      ? 'bg-white dark:bg-white text-fuchsia-700 dark:text-fuchsia-900'
+                      : 'bg-white/90 dark:bg-slate-700 text-fuchsia-700 dark:text-fuchsia-200 shadow-sm'
                   }`}
                 >
                   “”
@@ -299,7 +299,7 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
                 <XCircle className="w-6 h-6 shrink-0" />
               )}
               {!revealAnswer && isSelected && (
-                <span className="px-2.5 py-1 rounded-full bg-white text-fuchsia-800 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
+                <span className="px-2.5 py-1 rounded-full bg-white dark:bg-white text-fuchsia-800 dark:text-fuchsia-900 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>{t('yourSelectedQuote')}</span>
                 </span>
@@ -320,33 +320,33 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
 
       {/* Waiting Banner */}
       {hasAnswered && !revealAnswer && (
-        <div className="rounded-3xl bg-gradient-to-r from-fuchsia-50 via-rose-50 to-amber-50 border-2 border-fuchsia-300 p-4 sm:p-5 text-center space-y-3 shadow-md">
+        <div className="rounded-3xl bg-gradient-to-r from-fuchsia-50 via-rose-50 to-amber-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-2 border-fuchsia-300 dark:border-fuchsia-500/50 p-4 sm:p-5 text-center space-y-3 shadow-md">
           <div className="flex items-center justify-center gap-2">
             <span className="w-8 h-8 rounded-full bg-fuchsia-600 text-white flex items-center justify-center shadow">
               <CheckCircle2 className="w-5 h-5" />
             </span>
-            <span className="font-black text-fuchsia-950 text-base sm:text-lg">
+            <span className="font-black text-fuchsia-950 dark:text-fuchsia-200 text-base sm:text-lg">
               {t('quotesAnswerSubmittedTitle')}
             </span>
           </div>
 
           {effectiveSelectedAnswer !== undefined && options[effectiveSelectedAnswer] && (
-            <div className="max-w-md mx-auto rounded-2xl bg-white border-2 border-fuchsia-200 p-3 shadow-sm flex items-center gap-3 text-start">
-              <span className="w-8 h-8 rounded-full bg-fuchsia-100 text-fuchsia-800 flex items-center justify-center font-black text-sm shrink-0">
+            <div className="max-w-md mx-auto rounded-2xl bg-white dark:bg-slate-900 border-2 border-fuchsia-200 dark:border-slate-700 p-3 shadow-sm flex items-center gap-3 text-start">
+              <span className="w-8 h-8 rounded-full bg-fuchsia-100 dark:bg-fuchsia-950/70 text-fuchsia-800 dark:text-fuchsia-200 flex items-center justify-center font-black text-sm shrink-0">
                 “”
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-extrabold text-fuchsia-700 uppercase tracking-wider">
+                <p className="text-[11px] font-extrabold text-fuchsia-700 dark:text-fuchsia-300 uppercase tracking-wider">
                   {t('yourSelectedQuote')}
                 </p>
-                <p className="text-sm sm:text-base font-black text-slate-900 truncate">
+                <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
                   “{options[effectiveSelectedAnswer]}”
                 </p>
               </div>
             </div>
           )}
 
-          <p className="text-xs sm:text-sm font-bold text-slate-600">
+          <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">
             {t('quotesWaitingReveal')}
           </p>
         </div>
@@ -357,35 +357,35 @@ export const QuotesGame: React.FC<QuotesGameProps> = ({
         <div
           className={`rounded-3xl border-2 p-5 shadow-lg space-y-2.5 ${
             effectiveSelectedAnswer === question.correctIndex
-              ? 'bg-emerald-50 border-emerald-300'
-              : 'bg-rose-50 border-rose-200'
+              ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-500/60'
+              : 'bg-rose-50 dark:bg-slate-800/95 border-rose-200 dark:border-rose-400/60'
           }`}
         >
           <div className="flex items-center gap-2 font-extrabold text-lg">
             {effectiveSelectedAnswer === question.correctIndex ? (
               <>
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                <span className="text-emerald-800">{copy.nailedIt}</span>
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="text-emerald-800 dark:text-emerald-200">{copy.nailedIt}</span>
               </>
             ) : effectiveSelectedAnswer !== undefined ? (
               <>
-                <Heart className="w-6 h-6 text-rose-500 shrink-0" />
-                <span className="text-rose-800">{copy.notQuite}</span>
+                <Heart className="w-6 h-6 text-rose-500 dark:text-rose-400 shrink-0" />
+                <span className="text-rose-800 dark:text-rose-200">{copy.notQuite}</span>
               </>
             ) : (
               <>
-                <MessageCircle className="w-6 h-6 text-fuchsia-600 shrink-0" />
-                <span className="text-fuchsia-900">{t('quotesMomSays')}</span>
+                <MessageCircle className="w-6 h-6 text-fuchsia-600 dark:text-fuchsia-400 shrink-0" />
+                <span className="text-fuchsia-900 dark:text-fuchsia-200">{t('quotesMomSays')}</span>
               </>
             )}
           </div>
 
           {question.funFact?.[lang] && (
-            <div className="pt-2 border-t border-rose-200/70">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-fuchsia-700 mb-0.5">
+            <div className="pt-2 border-t border-rose-200/70 dark:border-slate-700">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-fuchsia-700 dark:text-fuchsia-300 mb-0.5">
                 {t('quotesFunFact')}
               </p>
-              <p className="text-base font-medium text-slate-800 leading-relaxed">
+              <p className="text-base font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
                 {question.funFact[lang]}
               </p>
             </div>

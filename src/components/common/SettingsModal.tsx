@@ -80,7 +80,7 @@ export const SettingsModal: React.FC = () => {
           <button
             type="button"
             onClick={closeSettings}
-            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-rose-600 dark:text-slate-400 flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-colors"
             aria-label={t('close')}
           >
             <X className="w-5 h-5" />

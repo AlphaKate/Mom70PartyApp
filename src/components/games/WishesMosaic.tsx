@@ -245,17 +245,17 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
       {showForm ? (
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 p-5 sm:p-6 shadow-xl space-y-4"
+          className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 p-5 sm:p-6 shadow-xl space-y-4"
         >
           <div className="text-center space-y-1.5">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow mb-1">
               <Heart className="w-6 h-6 fill-current" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-rose-800">{t('wishesTitle')}</h2>
-            <p className="text-sm sm:text-base text-slate-600">{t('wishesSubtitle')}</p>
+            <h2 className="text-xl sm:text-2xl font-black text-rose-800 dark:text-rose-200">{t('wishesTitle')}</h2>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">{t('wishesSubtitle')}</p>
             <div className="pt-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-extrabold">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-slate-800 border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 text-xs font-extrabold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>
                   {t('wishesQuotaBadge', {
                     count: sentCount,
@@ -267,8 +267,8 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
           </div>
 
           {justSentBanner && (
-            <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-300 px-4 py-2.5 text-center text-emerald-800 font-bold text-sm flex items-center justify-center gap-2">
-              <Heart className="w-4 h-4 fill-emerald-500 text-emerald-600 shrink-0" />
+            <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border-2 border-emerald-300 dark:border-emerald-500/60 px-4 py-2.5 text-center text-emerald-800 dark:text-emerald-200 font-bold text-sm flex items-center justify-center gap-2">
+              <Heart className="w-4 h-4 fill-emerald-500 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{t('wishesSubmittedTitle')}</span>
             </div>
           )}
@@ -281,23 +281,23 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
               placeholder={t('wishesPlaceholder')}
               rows={3}
               maxLength={MAX_WISH_TEXT_LENGTH}
-              className="w-full rounded-2xl border-2 border-amber-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 p-4 text-lg font-medium text-slate-800 bg-amber-50/30 outline-none resize-none transition-all"
+              className="w-full rounded-2xl border-2 border-amber-200 dark:border-slate-600 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-500/20 p-4 text-lg font-medium text-slate-800 dark:text-white bg-amber-50/30 dark:bg-slate-800 outline-none resize-none transition-all"
             />
-            <div className="flex justify-end text-xs font-bold text-slate-400">
+            <div className="flex justify-end text-xs font-bold text-slate-500 dark:text-slate-400">
               {draft.length}/{MAX_WISH_TEXT_LENGTH}
             </div>
           </div>
 
           {/* Quick Ideas */}
           <div className="space-y-2">
-            <p className="text-xs font-extrabold text-slate-500">{copy.quickIdeasLabel}</p>
+            <p className="text-xs font-extrabold text-slate-500 dark:text-slate-300">{copy.quickIdeasLabel}</p>
             <div className="flex flex-wrap gap-2">
               {copy.quickIdeas.map((idea) => (
                 <button
                   key={idea}
                   type="button"
                   onClick={() => handleAppendChip(idea)}
-                  className="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-sm font-bold transition-colors touch-manipulation active:scale-95"
+                  className="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-rose-200 dark:border-slate-600 text-rose-800 dark:text-slate-100 text-sm font-bold transition-colors touch-manipulation active:scale-95"
                 >
                   + {idea}
                 </button>
@@ -306,8 +306,8 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
           </div>
 
           {/* Live Selfie Attachment (Zero Cloud, Direct P2P) */}
-          <div className="rounded-2xl bg-rose-50/70 border-2 border-dashed border-rose-200 p-3.5 space-y-2.5">
-            <p className="text-xs font-extrabold text-rose-800">{t('selfieOptionalLabel')}</p>
+          <div className="rounded-2xl bg-rose-50/70 dark:bg-slate-800/70 border-2 border-dashed border-rose-200 dark:border-slate-600 p-3.5 space-y-2.5">
+            <p className="text-xs font-extrabold text-rose-800 dark:text-amber-200">{t('selfieOptionalLabel')}</p>
 
             <input
               ref={cameraInputRef}
@@ -326,7 +326,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
             />
 
             {selfieDataUrl ? (
-              <div className="flex items-center justify-between gap-3 bg-white rounded-2xl p-2.5 border border-rose-200 shadow-sm">
+              <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 rounded-2xl p-2.5 border border-rose-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={selfieDataUrl}
@@ -337,7 +337,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold transition-colors touch-manipulation"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 dark:hover:bg-rose-900/80 text-rose-800 dark:text-rose-200 text-xs font-extrabold transition-colors touch-manipulation"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       <span>{t('takeSelfieBtn')}</span>
@@ -345,7 +345,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
                     <button
                       type="button"
                       onClick={() => setSelfieDataUrl(undefined)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 text-xs font-extrabold transition-colors touch-manipulation"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-rose-950/70 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-extrabold transition-colors touch-manipulation"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>{t('removeSelfieBtn')}</span>
@@ -368,7 +368,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
                   type="button"
                   disabled={isProcessingPhoto}
                   onClick={() => galleryInputRef.current?.click()}
-                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white hover:bg-amber-50 border-2 border-amber-300 text-amber-900 font-extrabold text-sm shadow-sm transition-all active:scale-95 touch-manipulation disabled:opacity-50"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white hover:bg-amber-50 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-amber-300 dark:border-amber-500/60 text-amber-900 dark:text-amber-200 font-extrabold text-sm shadow-sm transition-all active:scale-95 touch-manipulation disabled:opacity-50"
                 >
                   <ImagePlus className="w-4 h-4 shrink-0" />
                   <span>{t('pickPhotoBtn')}</span>
@@ -377,7 +377,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
             )}
 
             {photoError && (
-              <p className="text-xs font-bold text-rose-600">{t('selfieError')}</p>
+              <p className="text-xs font-bold text-rose-600 dark:text-rose-300">{t('selfieError')}</p>
             )}
           </div>
 
@@ -387,7 +387,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
               <button
                 type="button"
                 onClick={handleCancelEdit}
-                className="min-h-[54px] px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-sm flex items-center justify-center gap-1 transition-colors touch-manipulation"
+                className="min-h-[54px] px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-sm flex items-center justify-center gap-1 transition-colors touch-manipulation"
               >
                 <X className="w-4 h-4" />
                 <span>{t('cancel')}</span>
@@ -410,13 +410,13 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
           </div>
         </form>
       ) : (
-        <div className="rounded-3xl bg-gradient-to-br from-rose-50 via-amber-50 to-pink-50 border-2 border-amber-300 p-6 text-center shadow-xl space-y-3">
+        <div className="rounded-3xl bg-gradient-to-br from-rose-50 via-amber-50 to-pink-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-500/50 p-6 text-center shadow-xl space-y-3">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-white flex items-center justify-center mx-auto shadow-lg">
             <Heart className="w-8 h-8 fill-current animate-pulse" />
           </div>
-          <h2 className="text-2xl font-black text-rose-800">{t('wishesMaxReachedTitle')}</h2>
-          <p className="text-sm sm:text-base text-slate-700">{t('wishesMaxReachedDesc')}</p>
-          <div className="flex items-center justify-center gap-2 text-amber-600 font-bold text-sm">
+          <h2 className="text-2xl font-black text-rose-800 dark:text-amber-300">{t('wishesMaxReachedTitle')}</h2>
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200">{t('wishesMaxReachedDesc')}</p>
+          <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-300 font-bold text-sm">
             <Sparkles className="w-4 h-4" />
             <span>
               {sentCount}/{MAX_WISHES_PER_PLAYER} • 70
@@ -428,8 +428,8 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
 
       {/* Player's Sent Wishes List (up to 5) with Edit Support */}
       {sentCount > 0 && (
-        <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 p-4 sm:p-5 shadow-lg space-y-3">
-          <h3 className="text-sm font-black text-rose-800 flex items-center gap-1.5">
+        <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 p-4 sm:p-5 shadow-lg space-y-3">
+          <h3 className="text-sm font-black text-rose-800 dark:text-amber-200 flex items-center gap-1.5">
             <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
             <span>
               {t('wishesYourSentList', {
@@ -443,7 +443,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
             {submittedWishes.map((wish, idx) => (
               <div
                 key={wish.id ?? `${wish.playerId}-${idx}`}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-rose-50/70 border border-rose-200 p-3"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 p-3"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   {wish.selfieDataUrl ? (
@@ -453,11 +453,11 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
                       className="w-12 h-12 rounded-xl object-cover border-2 border-amber-300 shadow-sm shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 font-black flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-400/20 text-amber-800 dark:text-amber-200 font-black flex items-center justify-center shrink-0">
                       #{idx + 1}
                     </div>
                   )}
-                  <p className="text-sm sm:text-base font-bold text-slate-800 break-words min-w-0">
+                  <p className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 break-words min-w-0">
                     “{wish.text}”
                   </p>
                 </div>
@@ -468,7 +468,7 @@ export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
                     onClick={() => handleStartEdit(wish)}
                     aria-label={t('editWishBtn')}
                     title={t('editWishBtn')}
-                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-rose-200 text-rose-700 shrink-0 transition-colors touch-manipulation"
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 dark:bg-slate-700 dark:hover:bg-slate-600 border border-rose-200 dark:border-slate-600 text-rose-700 dark:text-amber-200 shrink-0 transition-colors touch-manipulation"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -505,12 +505,12 @@ const TILE_COLORS = [
 ];
 
 const CLOUD_CARD_COLORS = [
-  'bg-rose-50 border-rose-300 text-rose-950',
-  'bg-amber-50 border-amber-300 text-amber-950',
-  'bg-sky-50 border-sky-300 text-sky-950',
-  'bg-emerald-50 border-emerald-300 text-emerald-950',
-  'bg-fuchsia-50 border-fuchsia-300 text-fuchsia-950',
-  'bg-violet-50 border-violet-300 text-violet-950',
+  'bg-rose-50 border-rose-300 text-rose-950 dark:bg-slate-800 dark:border-rose-400/50 dark:text-slate-100',
+  'bg-amber-50 border-amber-300 text-amber-950 dark:bg-slate-800 dark:border-amber-400/50 dark:text-slate-100',
+  'bg-sky-50 border-sky-300 text-sky-950 dark:bg-slate-800 dark:border-sky-400/50 dark:text-slate-100',
+  'bg-emerald-50 border-emerald-300 text-emerald-950 dark:bg-slate-800 dark:border-emerald-400/50 dark:text-slate-100',
+  'bg-fuchsia-50 border-fuchsia-300 text-fuchsia-950 dark:bg-slate-800 dark:border-fuchsia-400/50 dark:text-slate-100',
+  'bg-violet-50 border-violet-300 text-violet-950 dark:bg-slate-800 dark:border-violet-400/50 dark:text-slate-100',
 ];
 
 const DECORATIVE_EMOJIS = ['🎂', '❤️', '✨', '💐', '🥂', '🌟', '🎉', '70'];
@@ -608,13 +608,13 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
     <div dir={dir} className="w-full max-w-5xl mx-auto space-y-6">
       {/* Header Banner */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-200 via-rose-200 to-amber-200 text-rose-900 font-extrabold text-sm shadow-sm">
-          <Star className="w-4 h-4 text-rose-600 fill-rose-500" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-200 via-rose-200 to-amber-200 dark:from-slate-800 dark:via-indigo-950 dark:to-slate-800 border border-amber-300 dark:border-amber-400/50 text-amber-950 dark:text-amber-200 font-extrabold text-sm shadow-sm">
+          <Star className="w-4 h-4 text-rose-600 fill-rose-500 dark:text-amber-400 dark:fill-amber-400" />
           <span>
             {wishes.length} {t('wishesCount')}
           </span>
         </div>
-        <h2 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-rose-600 via-amber-500 to-fuchsia-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-rose-700 via-amber-600 to-fuchsia-700 dark:from-amber-200 dark:via-rose-200 dark:to-fuchsia-200 bg-clip-text text-transparent">
           {copy.headerPrefix} {momName} {copy.headerSuffix}
         </h2>
       </div>
@@ -697,7 +697,7 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
         {/* Spotlight Wish Banner */}
         <div className="mt-6 max-w-2xl mx-auto">
           {activeWish ? (
-            <div className="rounded-2xl bg-white/95 backdrop-blur border-2 border-amber-300 p-4 sm:p-5 shadow-xl flex items-center justify-between gap-3">
+            <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-300 dark:border-amber-400/50 p-4 sm:p-5 shadow-xl flex items-center justify-between gap-3">
               {wishes.length > 1 && (
                 <button
                   type="button"
@@ -707,7 +707,7 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                     )
                   }
                   aria-label="Previous wish"
-                  className="w-10 h-10 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 transition-colors"
+                  className="w-10 h-10 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-amber-300 dark:border-slate-600 text-amber-900 dark:text-amber-300 flex items-center justify-center shrink-0 transition-colors"
                 >
                   {dir === 'rtl' ? (
                     <ChevronRight className="w-5 h-5" />
@@ -726,14 +726,14 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                   />
                 )}
                 <div className="flex-1 text-center space-y-1.5 min-w-0">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-100 dark:bg-amber-400/20 text-rose-800 dark:text-amber-200 text-xs font-extrabold">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>{copy.spotlightLabel}</span>
                   </div>
-                  <p className="text-lg sm:text-2xl font-black text-slate-800 break-words leading-snug">
+                  <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white break-words leading-snug">
                     “{activeWish.text}”
                   </p>
-                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600">
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-rose-700 dark:text-sky-300">
                     <AvatarDisplay avatar={activeWish.avatar} className="w-5 h-5 shrink-0" />
                     <span>{activeWish.playerName}</span>
                   </div>
@@ -747,7 +747,7 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                     handleSelectWish((safeActiveIndex + 1) % wishes.length)
                   }
                   aria-label="Next wish"
-                  className="w-10 h-10 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 transition-colors"
+                  className="w-10 h-10 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-amber-300 dark:border-slate-600 text-amber-900 dark:text-amber-300 flex items-center justify-center shrink-0 transition-colors"
                 >
                   {dir === 'rtl' ? (
                     <ChevronLeft className="w-5 h-5" />
@@ -772,8 +772,8 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
 
       {/* Interactive Word Cloud / All Family Wishes */}
       {wishes.length > 0 && (
-        <div className="rounded-3xl bg-white/95 border-2 border-amber-200 p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-center gap-2 text-rose-700 font-extrabold text-lg">
+        <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 border-2 border-amber-200 dark:border-slate-700 p-5 shadow-lg space-y-4">
+          <div className="flex items-center justify-center gap-2 text-rose-700 dark:text-amber-300 font-extrabold text-lg">
             <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
             <span>{copy.allBlessings}</span>
           </div>

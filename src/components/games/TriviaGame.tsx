@@ -189,9 +189,9 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
   return (
     <div dir={dir} className="relative w-full max-w-2xl mx-auto select-none space-y-4">
       {/* Question Header & Countdown */}
-      <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-sky-200 p-4 sm:p-5 shadow-lg space-y-3">
+      <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-sky-200 dark:border-slate-700 p-4 sm:p-5 shadow-lg space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-sky-100 text-sky-900 font-extrabold text-sm">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/70 text-sky-900 dark:text-sky-200 font-extrabold text-sm">
             {t('triviaQuestionLabel')} {questionIndex + 1} {t('ofTotal')}{' '}
             {Math.max(1, totalQuestions)}
           </span>
@@ -199,15 +199,15 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
           <span
             className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full font-extrabold text-sm transition-all ${
               hasAnswered
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/60'
                 : remainingSeconds <= 5 && !revealAnswer
-                ? 'bg-rose-100 text-rose-700 animate-pulse'
-                : 'bg-slate-100 text-slate-700'
+                ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-200 animate-pulse'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
             }`}
           >
             {hasAnswered ? (
               <>
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{t('triviaAnswerLockedBadge')}</span>
               </>
             ) : (
@@ -221,7 +221,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
         </div>
 
         {/* Countdown Progress Bar */}
-        <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="w-full h-3.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
             className={`h-full ${hasAnswered ? 'bg-emerald-500' : barColor} transition-all duration-150 rounded-full`}
             style={{ width: `${hasAnswered ? 100 : remainingPercent}%` }}
@@ -229,7 +229,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
         </div>
 
         {remainingSeconds === 0 && !hasAnswered && !revealAnswer && (
-          <p className="text-xs font-bold text-rose-600 text-center">
+          <p className="text-xs font-bold text-rose-600 dark:text-rose-300 text-center">
             {copy.timesUp}
           </p>
         )}
@@ -239,12 +239,12 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
             <img
               src={question.imageUrl}
               alt=""
-              className="w-full max-h-52 object-contain rounded-2xl mx-auto bg-amber-50/50 border border-amber-100"
+              className="w-full max-h-52 object-contain rounded-2xl mx-auto bg-amber-50/50 dark:bg-slate-800 border border-amber-100 dark:border-slate-700"
             />
           </div>
         )}
 
-        <h2 className="text-xl sm:text-2xl font-black text-slate-800 text-center leading-snug pt-1">
+        <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white text-center leading-snug pt-1">
           {question.question[lang]}
         </h2>
       </div>
@@ -268,7 +268,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
                   'bg-rose-600 border-b-4 border-rose-800 text-white ring-4 ring-rose-300 opacity-90';
               } else {
                 cardClasses =
-                  'bg-slate-200 border-b-4 border-slate-300 text-slate-500 opacity-55';
+                  'bg-slate-200 dark:bg-slate-800/60 border-b-4 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 opacity-60';
               }
             } else if (hasAnswered) {
               if (isSelected) {
@@ -292,7 +292,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
                   <span
                     className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center font-black text-base ${
                       revealAnswer && !isCorrect && !isSelected
-                        ? 'bg-slate-300 text-slate-600'
+                        ? 'bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                         : palette.badge
                     }`}
                   >
@@ -308,7 +308,7 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
                   <XCircle className="w-7 h-7 shrink-0 text-white" />
                 )}
                 {!revealAnswer && isSelected && (
-                  <span className="px-2.5 py-1 rounded-full bg-white text-emerald-800 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-white dark:bg-white text-emerald-800 dark:text-emerald-900 text-xs font-black shadow-md flex items-center gap-1 shrink-0">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>{t('yourSelectedAnswer')}</span>
                   </span>
@@ -330,18 +330,18 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
 
       {/* Locked-in Waiting Banner */}
       {hasAnswered && !revealAnswer && (
-        <div className="rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 border-2 border-emerald-300 p-4 sm:p-5 text-center space-y-3 shadow-md">
+        <div className="rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-2 border-emerald-300 dark:border-emerald-500/60 p-4 sm:p-5 text-center space-y-3 shadow-md">
           <div className="flex items-center justify-center gap-2">
             <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
               <CheckCircle2 className="w-5 h-5" />
             </span>
-            <span className="font-black text-emerald-900 text-base sm:text-lg">
+            <span className="font-black text-emerald-900 dark:text-emerald-300 text-base sm:text-lg">
               {t('triviaAnswerSubmittedTitle')}
             </span>
           </div>
 
           {effectiveSelectedAnswer !== undefined && options[effectiveSelectedAnswer] && (
-            <div className="max-w-md mx-auto rounded-2xl bg-white border-2 border-emerald-200 p-3 shadow-sm flex items-center gap-3 text-start">
+            <div className="max-w-md mx-auto rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-200 dark:border-slate-700 p-3 shadow-sm flex items-center gap-3 text-start">
               <span
                 className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-black text-sm ${
                   OPTION_STYLES[effectiveSelectedAnswer % OPTION_STYLES.length].badge
@@ -350,17 +350,17 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
                 {OPTION_STYLES[effectiveSelectedAnswer % OPTION_STYLES.length].symbol}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                <p className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
                   {t('yourSelectedAnswer')}
                 </p>
-                <p className="text-sm sm:text-base font-black text-slate-900 truncate">
+                <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
                   {options[effectiveSelectedAnswer]}
                 </p>
               </div>
             </div>
           )}
 
-          <p className="text-xs sm:text-sm font-bold text-slate-600">
+          <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">
             {t('triviaWaitingReveal')}
           </p>
         </div>
@@ -371,37 +371,37 @@ export const TriviaGame: React.FC<TriviaGameProps> = ({
         <div
           className={`rounded-3xl border-2 p-4 sm:p-5 shadow-lg space-y-2.5 ${
             effectiveSelectedAnswer === question.correctIndex
-              ? 'bg-emerald-50 border-emerald-300'
-              : 'bg-amber-50 border-amber-300'
+              ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-500/60'
+              : 'bg-amber-50 dark:bg-slate-800/95 border-amber-300 dark:border-amber-500/60'
           }`}
         >
           <div className="flex items-center gap-2 font-extrabold text-lg">
             {effectiveSelectedAnswer === question.correctIndex ? (
               <>
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                <span className="text-emerald-800">{copy.greatJob}</span>
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="text-emerald-800 dark:text-emerald-200">{copy.greatJob}</span>
               </>
             ) : effectiveSelectedAnswer !== undefined ? (
               <>
-                <XCircle className="w-6 h-6 text-rose-500 shrink-0" />
-                <span className="text-rose-800">{copy.niceTry}</span>
+                <XCircle className="w-6 h-6 text-rose-500 dark:text-rose-400 shrink-0" />
+                <span className="text-rose-800 dark:text-rose-200">{copy.niceTry}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-6 h-6 text-amber-600 shrink-0" />
-                <span className="text-amber-900">{copy.correctAnswer}</span>
+                <Sparkles className="w-6 h-6 text-amber-600 dark:text-amber-300 shrink-0" />
+                <span className="text-amber-900 dark:text-amber-200">{copy.correctAnswer}</span>
               </>
             )}
           </div>
 
           {question.funFact?.[lang] && (
-            <div className="flex items-start gap-2.5 pt-2 border-t border-amber-200/80">
-              <Lightbulb className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 pt-2 border-t border-amber-200/80 dark:border-slate-700">
+              <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-300 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-amber-700">
+                <p className="text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300">
                   {t('triviaFunFact')}
                 </p>
-                <p className="text-base font-medium text-slate-800 leading-relaxed">
+                <p className="text-base font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
                   {question.funFact[lang]}
                 </p>
               </div>

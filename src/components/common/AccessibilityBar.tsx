@@ -94,7 +94,7 @@ export const AccessibilityBar: React.FC<AccessibilityBarProps> = ({
                     } ${
                       active
                         ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm'
-                        : 'text-slate-700 dark:text-slate-300 hover:text-rose-700 hover:bg-white/70 dark:hover:bg-slate-700'
+                        : 'text-slate-700 dark:text-slate-300 hover:text-rose-700 dark:hover:text-white hover:bg-white/70 dark:hover:bg-slate-700'
                     }`}
                   >
                     {t(labelKey)}
@@ -168,8 +168,8 @@ export const AccessibilityBar: React.FC<AccessibilityBarProps> = ({
               compact ? 'px-2 py-1.5 text-xs' : 'px-2.5 py-1.5 text-xs sm:text-sm'
             } ${
               isMuted
-                ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                : 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/70'
             }`}
           >
             {isMuted ? (

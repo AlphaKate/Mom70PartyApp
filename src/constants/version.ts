@@ -3,7 +3,7 @@
  * Rule: MUST be incremented on every application update.
  * Format: XXX.YYY.ZZZ (3-digit zero-padded Major.Minor.Patch).
  */
-export const APP_VERSION = '001.002.000';
+export const APP_VERSION = '001.002.001';
 
 export const APP_VERSION_REGEX = /^\d{3}\.\d{3}\.\d{3}$/;
 

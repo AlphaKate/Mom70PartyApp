@@ -117,35 +117,35 @@ export function App() {
   if (mode === 'split') {
     return (
       <main dir={dir} className="min-h-screen p-3 sm:p-5 space-y-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-white/95 backdrop-blur border-2 border-amber-300 px-4 py-2.5 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-300 dark:border-slate-700 px-4 py-2.5 shadow-sm">
           <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={handleBackHome}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-rose-200 dark:border-slate-600 text-rose-700 dark:text-slate-100 font-bold text-sm transition-colors"
             >
               <Home className="w-4 h-4" aria-hidden="true" />
               <span>{t('backToHome')}</span>
             </button>
-            <span className="font-black text-slate-900 text-sm sm:text-base">
+            <span className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
               {t('splitDemoTitle')}
             </span>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-black text-xs sm:text-sm">
+          <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-slate-800 border border-amber-200 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 font-black text-xs sm:text-sm">
             {t('roomCodeLabel')}: #{splitRoomCode}
           </span>
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-          <section className="xl:col-span-7 rounded-3xl bg-white/50 border-2 border-rose-200/80 p-3 sm:p-4 shadow-lg">
+          <section className="xl:col-span-7 rounded-3xl bg-white/60 dark:bg-slate-900/70 border-2 border-rose-200/80 dark:border-slate-700 p-3 sm:p-4 shadow-lg">
             <SettingsProvider scope="host" applyToDocument={false}>
               <HostDashboard initialRoomCode={splitRoomCode} compact />
             </SettingsProvider>
           </section>
 
           <section className="xl:col-span-5 rounded-[2.2rem] bg-slate-900 p-3 shadow-2xl border-4 border-slate-800">
-            <div className="rounded-[1.6rem] bg-gradient-to-b from-amber-50 to-rose-50 p-3 sm:p-4 min-h-[620px]">
+            <div className="rounded-[1.6rem] bg-gradient-to-b from-amber-50 to-rose-50 dark:from-slate-950 dark:to-slate-900 p-3 sm:p-4 min-h-[620px]">
               <SettingsProvider scope="player" applyToDocument={false}>
                 <PlayerClient initialRoomCode={splitRoomCode} compact />
               </SettingsProvider>
@@ -163,7 +163,7 @@ export function App() {
         <AccessibilityBar />
 
         {/* Hero Card */}
-        <header className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-xl p-6 sm:p-10 text-center space-y-4">
+        <header className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-xl p-6 sm:p-10 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-500 to-amber-500 text-white text-sm font-black shadow">
             <Sparkles className="w-4 h-4" aria-hidden="true" />
             <span>{t('birthdayBadge')}</span>
@@ -173,17 +173,17 @@ export function App() {
             <MomCelebrationIcon className="w-28 h-28 sm:w-32 sm:h-32 mx-auto animate-float-gentle drop-shadow-xl" />
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black text-rose-900 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-black text-rose-900 dark:text-white leading-tight tracking-tight">
             {t('appTitle')}
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto font-medium">
+          <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium">
             {t('appSubtitle')}
           </p>
         </header>
 
         {/* Mode Selection */}
         <section className="space-y-4">
-          <h2 className="text-xl sm:text-2xl font-black text-center text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-black text-center text-slate-900 dark:text-white">
             {t('chooseModeTitle')}
           </h2>
 
@@ -192,16 +192,16 @@ export function App() {
             <button
               type="button"
               onClick={() => setMode('host')}
-              className="group text-start rounded-3xl bg-white/95 hover:bg-white border-2 border-rose-200 hover:border-rose-400 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
+              className="group text-start rounded-3xl bg-white/95 hover:bg-white dark:bg-slate-900/95 dark:hover:bg-slate-800/95 border-2 border-rose-200 dark:border-rose-500/40 hover:border-rose-400 dark:hover:border-rose-400 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
             >
               <div className="space-y-3">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                   <Tv className="w-7 h-7" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl font-black text-rose-900">{t('hostModeTitle')}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{t('hostModeDesc')}</p>
+                <h3 className="text-xl font-black text-rose-900 dark:text-rose-200">{t('hostModeTitle')}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{t('hostModeDesc')}</p>
               </div>
-              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-rose-50 group-hover:bg-rose-500 text-rose-700 group-hover:text-white font-extrabold text-sm transition-colors">
+              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-rose-50 group-hover:bg-rose-500 dark:bg-slate-800 dark:group-hover:bg-rose-500 text-rose-700 dark:text-rose-200 group-hover:text-white dark:group-hover:text-white font-extrabold text-sm transition-colors">
                 {t('openLobbyBtn')}
               </span>
             </button>
@@ -210,16 +210,16 @@ export function App() {
             <button
               type="button"
               onClick={() => setMode('player')}
-              className="group text-start rounded-3xl bg-white/95 hover:bg-white border-2 border-sky-200 hover:border-sky-400 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
+              className="group text-start rounded-3xl bg-white/95 hover:bg-white dark:bg-slate-900/95 dark:hover:bg-slate-800/95 border-2 border-sky-200 dark:border-sky-500/40 hover:border-sky-400 dark:hover:border-sky-400 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
             >
               <div className="space-y-3">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-500 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                   <Smartphone className="w-7 h-7" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl font-black text-sky-900">{t('playerModeTitle')}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{t('playerModeDesc')}</p>
+                <h3 className="text-xl font-black text-sky-900 dark:text-sky-200">{t('playerModeTitle')}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{t('playerModeDesc')}</p>
               </div>
-              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-sky-50 group-hover:bg-sky-500 text-sky-700 group-hover:text-white font-extrabold text-sm transition-colors">
+              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-sky-50 group-hover:bg-sky-500 dark:bg-slate-800 dark:group-hover:bg-sky-500 text-sky-700 dark:text-sky-200 group-hover:text-white dark:group-hover:text-white font-extrabold text-sm transition-colors">
                 {t('joinPartyBtn')}
               </span>
             </button>
@@ -228,16 +228,16 @@ export function App() {
             <button
               type="button"
               onClick={handleStartSplitDemo}
-              className="group text-start rounded-3xl bg-white/95 hover:bg-white border-2 border-amber-300 hover:border-amber-500 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
+              className="group text-start rounded-3xl bg-white/95 hover:bg-white dark:bg-slate-900/95 dark:hover:bg-slate-800/95 border-2 border-amber-300 dark:border-amber-500/40 hover:border-amber-500 dark:hover:border-amber-400 p-6 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex flex-col justify-between gap-4"
             >
               <div className="space-y-3">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                   <LayoutGrid className="w-7 h-7" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl font-black text-amber-900">{t('splitDemoTitle')}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{t('splitDemoDesc')}</p>
+                <h3 className="text-xl font-black text-amber-900 dark:text-amber-200">{t('splitDemoTitle')}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{t('splitDemoDesc')}</p>
               </div>
-              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-amber-50 group-hover:bg-amber-500 text-amber-900 group-hover:text-white font-extrabold text-sm transition-colors">
+              <span className="inline-flex items-center justify-center w-full py-2.5 rounded-xl bg-amber-50 group-hover:bg-amber-500 dark:bg-slate-800 dark:group-hover:bg-amber-500 text-amber-900 dark:text-amber-200 group-hover:text-white dark:group-hover:text-white font-extrabold text-sm transition-colors">
                 {t('splitDemoTitle')}
               </span>
             </button>
@@ -247,8 +247,8 @@ export function App() {
 
       {/* Privacy Footer */}
       <footer className="w-full max-w-5xl mx-auto pt-8 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold shadow-sm">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 text-xs sm:text-sm font-bold shadow-sm">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
           <span>{t('demoDataNote')}</span>
         </div>
       </footer>

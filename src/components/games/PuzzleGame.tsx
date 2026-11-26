@@ -229,35 +229,35 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
   return (
     <div dir={dir} className="relative w-full max-w-2xl mx-auto select-none space-y-4">
       {/* Header & Progress Bar */}
-      <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 p-4 shadow-md">
+      <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 p-4 shadow-md">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div>
-            <h2 className="text-xl font-extrabold text-amber-800">
+            <h2 className="text-xl font-extrabold text-amber-800 dark:text-amber-300">
               {puzzle.title[lang]}
             </h2>
-            <p className="text-sm text-slate-600">{copy.subtitle}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{copy.subtitle}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-800 font-bold text-sm">
-              <Timer className="w-4 h-4 text-slate-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm">
+              <Timer className="w-4 h-4 text-slate-500 dark:text-slate-300" />
               {elapsedSeconds} {t('secondsUnit')}
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
-              <Zap className="w-4 h-4 text-amber-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 font-bold text-sm">
+              <Zap className="w-4 h-4 text-amber-600 dark:text-amber-300" />
               +{currentSpeedBonus}
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 font-bold text-sm">
               <Check className="w-4 h-4" />
               {t('puzzleTilesCorrect')}: {correctCount}/{totalTiles}
             </span>
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-100 text-orange-900 font-bold text-sm">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 font-bold text-sm">
               {copy.moves}: {moves}
             </span>
           </div>
         </div>
 
-        <div className="w-full h-3.5 bg-amber-100 rounded-full overflow-hidden mb-3">
+        <div className="w-full h-3.5 bg-amber-100 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
           <div
             className="h-full bg-gradient-to-r from-amber-500 via-orange-400 to-emerald-500 transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
@@ -265,7 +265,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs sm:text-sm font-semibold text-slate-600">
+          <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
             {isSolved
               ? copy.solvedTitle
               : selectedSlot !== null
@@ -280,7 +280,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border-2 transition-colors touch-manipulation ${
                 showNumbers
                   ? 'bg-amber-500 text-white border-amber-600'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
               <Hash className="w-4 h-4" />
@@ -292,7 +292,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border-2 transition-colors touch-manipulation ${
                 showPreview
                   ? 'bg-rose-500 text-white border-rose-600'
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
               {showPreview ? (
@@ -317,7 +317,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
 
       {/* Reference Preview Drawer */}
       {showPreview && !isSolved && (
-        <div className="rounded-3xl bg-white p-3 border-2 border-rose-300 shadow-lg max-w-xs mx-auto">
+        <div className="rounded-3xl bg-white dark:bg-slate-900 p-3 border-2 border-rose-300 dark:border-rose-500/60 shadow-lg max-w-xs mx-auto">
           <img
             src={activeImageUrl}
             referrerPolicy="no-referrer"
@@ -335,7 +335,7 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
           className={`w-full max-w-[440px] mx-auto aspect-square rounded-3xl p-2 sm:p-2.5 shadow-xl border-4 transition-all duration-500 ${
             isSolved
               ? 'bg-emerald-500 border-emerald-400'
-              : 'bg-white/95 border-amber-300'
+              : 'bg-white/95 dark:bg-slate-900/95 border-amber-300 dark:border-amber-500/50'
           }`}
         >
           <div
@@ -411,10 +411,10 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
 
       {/* Solved Story Reveal */}
       {isSolved && (
-        <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-amber-50 to-rose-50 border-2 border-emerald-400 p-5 shadow-xl space-y-2.5">
+        <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-amber-50 to-rose-50 dark:from-slate-900 dark:via-emerald-950/60 dark:to-slate-900 border-2 border-emerald-400 dark:border-emerald-500/60 p-5 shadow-xl space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-emerald-700 font-extrabold text-xl">
-              <Trophy className="w-7 h-7 text-amber-500 shrink-0" />
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-extrabold text-xl">
+              <Trophy className="w-7 h-7 text-amber-500 dark:text-amber-400 shrink-0" />
               <span>{t('puzzleCompleted')}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -435,19 +435,19 @@ export const PuzzleGame: React.FC<PuzzleGameProps> = ({
               )}
             </div>
           </div>
-          <div className="flex items-start gap-2.5 pt-1 border-t border-emerald-200/80">
-            <BookOpen className="w-5 h-5 text-rose-500 shrink-0 mt-1" />
+          <div className="flex items-start gap-2.5 pt-1 border-t border-emerald-200/80 dark:border-slate-700">
+            <BookOpen className="w-5 h-5 text-rose-500 dark:text-amber-300 shrink-0 mt-1" />
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-rose-600 mb-0.5">
+              <p className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-amber-300 mb-0.5">
                 {t('puzzleStoryTitle')}
               </p>
-              <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed">
+              <p className="text-base sm:text-lg font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
                 {puzzle.story[lang]}
               </p>
             </div>
           </div>
           <div className="flex justify-end">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-amber-500 dark:text-amber-400" />
           </div>
         </div>
       )}

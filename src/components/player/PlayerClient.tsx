@@ -409,7 +409,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             <button
               type="button"
               onClick={handleBackHome}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-white border border-rose-200 text-rose-700 font-bold text-sm shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-white dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-rose-200 dark:border-slate-700 text-rose-700 dark:text-slate-100 font-bold text-sm shadow-sm transition-colors"
             >
               <Home className="w-4 h-4" aria-hidden="true" />
               <span>{t('backToHome')}</span>
@@ -420,20 +420,20 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
 
         <form
           onSubmit={handleJoinSubmit}
-          className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-xl p-5 sm:p-7 space-y-5"
+          className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-xl p-5 sm:p-7 space-y-5"
         >
           <div className="text-center space-y-1.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 dark:bg-amber-400/20 text-rose-800 dark:text-amber-200 text-xs font-extrabold">
               <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
               {t('birthdayBadge')}
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-rose-900">
+            <h1 className="text-2xl sm:text-3xl font-black text-rose-900 dark:text-white">
               {t('playerJoinTitle')}
             </h1>
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-extrabold text-slate-800">
+            <label className="block text-sm font-extrabold text-slate-800 dark:text-slate-200">
               {t('roomCodeInputLabel')}
             </label>
             <input
@@ -446,12 +446,12 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               }}
               placeholder={t('roomCodePlaceholder')}
               maxLength={8}
-              className="w-full rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-center text-2xl font-black tracking-[0.2em] uppercase bg-rose-50/40 outline-none transition-all"
+              className="w-full rounded-2xl border-2 border-rose-200 dark:border-slate-600 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-500/20 px-4 py-3 text-center text-2xl font-black tracking-[0.2em] uppercase bg-rose-50/40 dark:bg-slate-800 dark:text-white outline-none transition-all"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-extrabold text-slate-800">
+            <label className="block text-sm font-extrabold text-slate-800 dark:text-slate-200">
               {t('playerNameLabel')}
             </label>
             <input
@@ -463,22 +463,22 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               }}
               placeholder={t('playerNamePlaceholder')}
               maxLength={MAX_PLAYER_NAME_LENGTH}
-              className="w-full rounded-2xl border-2 border-amber-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-lg font-bold bg-white outline-none transition-all"
+              className="w-full rounded-2xl border-2 border-amber-200 dark:border-slate-600 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-500/20 px-4 py-3 text-lg font-bold bg-white dark:bg-slate-800 dark:text-white outline-none transition-all"
             />
           </div>
 
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-extrabold text-slate-800">
+              <label className="block text-sm font-extrabold text-slate-800 dark:text-slate-200">
                 {t('chooseAvatarLabel')}
               </label>
-              <span className="text-xs font-bold text-rose-600">
+              <span className="text-xs font-bold text-rose-600 dark:text-amber-300">
                 {currentCategoryObj.labels[lang] || currentCategoryObj.labels.he}
               </span>
             </div>
 
             {/* Category tabs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-amber-100/70 rounded-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-amber-100/70 dark:bg-slate-800 rounded-2xl">
               {AVATAR_CATEGORIES.map((cat) => {
                 const isCatActive = avatarCategory === cat.key;
                 return (
@@ -492,7 +492,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                     className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl font-black text-xs transition-all touch-manipulation ${
                       isCatActive
                         ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md scale-[1.02]'
-                        : 'text-slate-700 hover:bg-white/80 bg-white/40'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-700 bg-white/50 dark:bg-slate-900/60'
                     }`}
                   >
                     <AvatarDisplay avatar={cat.icon} className="w-5 h-5 shrink-0" />
@@ -519,15 +519,15 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                     aria-pressed={isSelected}
                     className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 transition-all touch-manipulation min-h-[92px] ${
                       isSelected
-                        ? 'bg-gradient-to-br from-rose-100 via-pink-50 to-amber-100 border-rose-500 ring-4 ring-rose-300/50 scale-105 shadow-md z-10'
-                        : 'bg-white hover:bg-rose-50/70 border-slate-200 shadow-sm'
+                        ? 'bg-gradient-to-br from-rose-100 via-pink-50 to-amber-100 dark:from-amber-950/90 dark:via-slate-800 dark:to-rose-950/80 border-rose-500 dark:border-amber-400 ring-4 ring-rose-300/50 dark:ring-amber-400/40 scale-105 shadow-md z-10'
+                        : 'bg-white hover:bg-rose-50/70 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border-slate-200 dark:border-slate-700 shadow-sm'
                     }`}
                   >
                     <AvatarDisplay
                       avatar={item.id}
                       className="w-12 h-12 shrink-0 drop-shadow-sm transition-transform group-hover:scale-105"
                     />
-                    <span className="text-[11px] font-black text-slate-800 line-clamp-2 max-w-full mt-1.5 px-0.5 leading-tight text-center">
+                    <span className="text-[11px] font-black text-slate-900 dark:text-slate-100 line-clamp-2 max-w-full mt-1.5 px-0.5 leading-tight text-center">
                       {displayName}
                     </span>
                     {isSelected && (
@@ -541,9 +541,9 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             </div>
 
             {/* Selected avatar indicator */}
-            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs sm:text-sm">
-              <span className="font-bold text-slate-600">{t('selectedAvatarLabel')}</span>
-              <span className="font-black text-rose-700 flex items-center gap-2">
+            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm">
+              <span className="font-bold text-slate-600 dark:text-slate-300">{t('selectedAvatarLabel')}</span>
+              <span className="font-black text-rose-700 dark:text-amber-300 flex items-center gap-2">
                 <AvatarDisplay avatar={avatar} className="w-8 h-8 shrink-0 drop-shadow-sm" />
                 <span className="text-sm font-black">{getAvatarDisplayName(avatar, lang)}</span>
               </span>
@@ -551,7 +551,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           </div>
 
           {formErrorKey && (
-            <p className="rounded-xl bg-rose-50 border border-rose-300 px-3 py-2 text-sm font-bold text-rose-700 text-center">
+            <p className="rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-500/60 px-3 py-2 text-sm font-bold text-rose-700 dark:text-rose-200 text-center">
               {t(formErrorKey)}
             </p>
           )}
@@ -585,7 +585,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           <button
             type="button"
             onClick={handleBackHome}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white border border-rose-200 text-rose-700 font-bold text-xs sm:text-sm shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-rose-200 dark:border-slate-700 text-rose-700 dark:text-slate-100 font-bold text-xs sm:text-sm shadow-sm transition-colors"
           >
             <Home className="w-4 h-4" aria-hidden="true" />
             <span>{t('backToHome')}</span>
@@ -595,16 +595,16 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       </div>
 
       {/* Player Status Strip */}
-      <div className="rounded-2xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-sm px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-sm px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <AvatarDisplay avatar={joinedIdentityRef.current.avatar} className="w-8 h-8 shrink-0 drop-shadow-sm" />
           <div className="min-w-0">
-            <p className="font-black text-slate-900 truncate">{joinedIdentityRef.current.name}</p>
-            <p className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600">
+            <p className="font-black text-slate-900 dark:text-white truncate">{joinedIdentityRef.current.name}</p>
+            <p className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">
               {connStatus === 'connected' || connStatus === 'local-only' ? (
-                <Wifi className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                <Wifi className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
               ) : (
-                <WifiOff className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
+                <WifiOff className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" aria-hidden="true" />
               )}
               <span>
                 #{activeRoomCode} • {connectionText}
@@ -614,16 +614,16 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <div className="px-3 py-1 rounded-xl bg-amber-100 border border-amber-200 text-center">
-            <p className="text-[10px] font-extrabold text-amber-800 uppercase">{t('yourScore')}</p>
-            <p className="text-sm font-black text-rose-700">
+          <div className="px-3 py-1 rounded-xl bg-amber-100 dark:bg-slate-800 border border-amber-200 dark:border-amber-500/40 text-center">
+            <p className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase">{t('yourScore')}</p>
+            <p className="text-sm font-black text-rose-700 dark:text-white">
               {myPlayer?.score ?? 0} {t('scoreUnit')}
             </p>
           </div>
           {myRank !== null && (
-            <div className="px-3 py-1 rounded-xl bg-rose-100 border border-rose-200 text-center">
-              <p className="text-[10px] font-extrabold text-rose-700 uppercase">{t('yourRank')}</p>
-              <p className="text-sm font-black text-rose-900">#{myRank}</p>
+            <div className="px-3 py-1 rounded-xl bg-rose-100 dark:bg-slate-800 border border-rose-200 dark:border-sky-500/40 text-center">
+              <p className="text-[10px] font-extrabold text-rose-700 dark:text-sky-300 uppercase">{t('yourRank')}</p>
+              <p className="text-sm font-black text-rose-900 dark:text-white">#{myRank}</p>
             </div>
           )}
         </div>
@@ -631,17 +631,17 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
 
       {/* WAITING FOR HOST (SETUP / LOBBY / INITIAL CONNECT) */}
       {(!gameState || gameState.phase === 'SETUP' || gameState.phase === 'LOBBY') && (
-        <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 shadow-xl p-6 sm:p-8 text-center space-y-5">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-100 to-amber-100 border-2 border-rose-200 flex items-center justify-center mx-auto shadow-md animate-float-gentle p-2">
+        <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 shadow-xl p-6 sm:p-8 text-center space-y-5">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-100 to-amber-100 dark:from-slate-800 dark:to-indigo-950 border-2 border-rose-200 dark:border-amber-400/50 flex items-center justify-center mx-auto shadow-md animate-float-gentle p-2">
             <AvatarDisplay avatar={joinedIdentityRef.current.avatar} className="w-14 h-14 drop-shadow-md" />
           </div>
 
           <div className="space-y-1">
-            <p className="text-xs font-extrabold uppercase tracking-wider text-rose-500">
+            <p className="text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-amber-300">
               {t('youJoinedAs')}
             </p>
-            <h2 className="text-2xl font-black text-slate-900">{joinedIdentityRef.current.name}</h2>
-            <p className="text-xs font-bold text-rose-600">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">{joinedIdentityRef.current.name}</h2>
+            <p className="text-xs font-bold text-slate-600 dark:text-sky-200">
               {getAvatarDisplayName(joinedIdentityRef.current.avatar, lang)}
             </p>
           </div>
@@ -650,7 +650,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             <button
               type="button"
               onClick={() => setIsChangingLobbyAvatar(!isChangingLobbyAvatar)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-black transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-rose-200 dark:border-slate-600 text-rose-700 dark:text-amber-200 text-xs font-black transition-colors"
             >
               <span>🎨</span>
               <span>{t('changeAvatarBtn')}</span>
@@ -658,8 +658,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           </div>
 
           {isChangingLobbyAvatar && (
-            <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-start space-y-2.5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-white/70 rounded-2xl">
+            <div className="p-3.5 rounded-2xl bg-amber-50/80 dark:bg-slate-800/90 border border-amber-200 dark:border-slate-700 text-start space-y-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-white/70 dark:bg-slate-900 rounded-2xl">
                 {AVATAR_CATEGORIES.map((cat) => {
                   const isCatActive = avatarCategory === cat.key;
                   return (
@@ -673,7 +673,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                       className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl font-black text-xs transition-all touch-manipulation ${
                         isCatActive
                           ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md'
-                          : 'text-slate-700 hover:bg-white bg-slate-100/60'
+                          : 'text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 bg-slate-100/60 dark:bg-slate-800'
                       }`}
                     >
                       <AvatarDisplay avatar={cat.icon} className="w-4 h-4 shrink-0" />
@@ -696,12 +696,12 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                       aria-pressed={isSelected}
                       className={`relative flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all touch-manipulation min-h-[76px] ${
                         isSelected
-                          ? 'bg-gradient-to-br from-rose-100 to-amber-100 border-rose-500 ring-2 ring-rose-400/50 scale-105 shadow-md'
-                          : 'bg-white hover:bg-rose-50/70 border-slate-200'
+                          ? 'bg-gradient-to-br from-rose-100 to-amber-100 dark:from-amber-950/90 dark:to-rose-950/80 border-rose-500 dark:border-amber-400 ring-2 ring-rose-400/50 dark:ring-amber-400/40 scale-105 shadow-md'
+                          : 'bg-white hover:bg-rose-50/70 dark:bg-slate-900 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'
                       }`}
                     >
                       <AvatarDisplay avatar={item.id} className="w-10 h-10 shrink-0 drop-shadow-sm" />
-                      <span className="text-[10px] font-black text-slate-800 line-clamp-2 max-w-full mt-1 px-0.5 leading-tight text-center">
+                      <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 line-clamp-2 max-w-full mt-1 px-0.5 leading-tight text-center">
                         {displayName}
                       </span>
                       {isSelected && (
@@ -716,13 +716,13 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             </div>
           )}
 
-          <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-2">
-            <p className="font-extrabold text-amber-900">
+          <div className="rounded-2xl bg-amber-50 dark:bg-slate-800/90 border border-amber-200 dark:border-slate-700 p-4 space-y-2">
+            <p className="font-extrabold text-amber-900 dark:text-amber-200">
               {gameState ? t('waitingForHost') : t('connecting')}
             </p>
             {gameState && (
-              <p className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-600">
-                <Users className="w-4 h-4 text-rose-500" aria-hidden="true" />
+              <p className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300">
+                <Users className="w-4 h-4 text-rose-500 dark:text-amber-400" aria-hidden="true" />
                 <span>
                   {t('playersConnected')}: {playersList.length}
                 </span>
@@ -786,8 +786,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
       {gameState?.phase === 'WISHES' && (
         <div className="space-y-3">
           {gameState.isPaused && (
-            <div className="rounded-2xl bg-amber-100 border-2 border-amber-400 px-4 py-3 flex items-center gap-2.5 text-amber-950 font-bold text-sm">
-              <Pause className="w-5 h-5 shrink-0" aria-hidden="true" />
+            <div className="rounded-2xl bg-amber-100 dark:bg-amber-950/80 border-2 border-amber-400 dark:border-amber-500/70 px-4 py-3 flex items-center gap-2.5 text-amber-950 dark:text-amber-100 font-bold text-sm">
+              <Pause className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" />
               <span>{t('pausedBannerTitle')}</span>
             </div>
           )}
@@ -800,38 +800,38 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
 
       {/* FINALE PHASE */}
       {gameState?.phase === 'FINALE' && (
-        <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-300 shadow-xl p-6 sm:p-8 text-center space-y-5">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-300 via-yellow-200 to-rose-200 border-4 border-amber-400 flex items-center justify-center mx-auto shadow-lg">
+        <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-300 dark:border-amber-500/40 shadow-xl p-6 sm:p-8 text-center space-y-5">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-200 via-yellow-100 to-amber-300 dark:from-amber-900/90 dark:via-slate-800 dark:to-amber-950 border-4 border-amber-400 dark:border-amber-400/80 flex items-center justify-center mx-auto shadow-lg">
             {myRank === 1 ? (
-              <Crown className="w-10 h-10 text-amber-700" aria-hidden="true" />
+              <Crown className="w-10 h-10 text-amber-700 dark:text-amber-300" aria-hidden="true" />
             ) : myRank === 2 ? (
-              <Medal className="w-10 h-10 text-slate-600" aria-hidden="true" />
+              <Medal className="w-10 h-10 text-slate-600 dark:text-slate-200" aria-hidden="true" />
             ) : myRank === 3 ? (
-              <Award className="w-10 h-10 text-orange-600" aria-hidden="true" />
+              <Award className="w-10 h-10 text-orange-600 dark:text-orange-300" aria-hidden="true" />
             ) : (
-              <Trophy className="w-10 h-10 text-rose-600" aria-hidden="true" />
+              <Trophy className="w-10 h-10 text-rose-600 dark:text-rose-300" aria-hidden="true" />
             )}
           </div>
 
           <div className="space-y-1">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-black">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 dark:bg-amber-400/20 text-rose-800 dark:text-amber-200 text-xs font-black">
               <Heart className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
               {gameState.content.momName[lang] || gameState.content.momName.en}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-rose-900">
+            <h2 className="text-2xl sm:text-3xl font-black text-rose-900 dark:text-white">
               {t('happy70Banner')}
             </h2>
-            <p className="text-sm text-slate-600">{t('finaleSubtitle')}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{t('finaleSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
-            <div className="rounded-2xl bg-amber-50 border-2 border-amber-200 p-3">
-              <p className="text-xs font-extrabold text-amber-800">{t('yourRank')}</p>
-              <p className="text-3xl font-black text-amber-900">#{myRank ?? 1}</p>
+            <div className="rounded-2xl bg-amber-50 dark:bg-slate-800/90 border-2 border-amber-200 dark:border-amber-500/40 p-3">
+              <p className="text-xs font-extrabold text-amber-800 dark:text-amber-300">{t('yourRank')}</p>
+              <p className="text-3xl font-black text-amber-900 dark:text-white">#{myRank ?? 1}</p>
             </div>
-            <div className="rounded-2xl bg-rose-50 border-2 border-rose-200 p-3">
-              <p className="text-xs font-extrabold text-rose-700">{t('yourScore')}</p>
-              <p className="text-3xl font-black text-rose-900">{myPlayer?.score ?? 0}</p>
+            <div className="rounded-2xl bg-rose-50 dark:bg-slate-800/90 border-2 border-rose-200 dark:border-sky-500/40 p-3">
+              <p className="text-xs font-extrabold text-rose-700 dark:text-sky-300">{t('yourScore')}</p>
+              <p className="text-3xl font-black text-rose-900 dark:text-white">{myPlayer?.score ?? 0}</p>
             </div>
           </div>
 
@@ -840,7 +840,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
               {mySubmittedWishes.map((w, idx) => (
                 <div
                   key={w.id ?? idx}
-                  className="flex items-center gap-3 rounded-2xl bg-rose-50/70 border border-rose-200 p-3 text-sm text-slate-800 font-bold"
+                  className="flex items-center gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 p-3 text-sm text-slate-800 dark:text-slate-100 font-bold"
                 >
                   {w.selfieDataUrl && (
                     <img
@@ -856,8 +856,8 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           )}
 
           {sortedStandings.length > 0 && (
-            <div className="text-start space-y-2 pt-2 border-t border-amber-200">
-              <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+            <div className="text-start space-y-2 pt-2 border-t border-amber-200 dark:border-slate-700">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-300">
                 {t('podiumTitle')}
               </p>
               {sortedStandings.slice(0, 3).map((p, idx) => (
@@ -865,21 +865,21 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
                   key={p.id}
                   className={`flex items-center justify-between rounded-xl px-3 py-2 border ${
                     p.id === playerId
-                      ? 'bg-rose-50 border-rose-300 font-black'
-                      : 'bg-slate-50 border-slate-200 font-bold'
+                      ? 'bg-amber-50 dark:bg-slate-800 border-amber-400 dark:border-amber-400/70 font-black'
+                      : 'bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 font-bold'
                   }`}
                 >
                   <span className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="shrink-0">#{idx + 1}</span>
+                    <span className="shrink-0 text-slate-700 dark:text-amber-300">#{idx + 1}</span>
                     <AvatarDisplay avatar={p.avatar} className="w-6 h-6 shrink-0" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate leading-tight">{p.name}</span>
-                      <span className="block text-[11px] font-bold text-rose-600 dark:text-rose-300 truncate leading-tight">
+                      <span className="block text-slate-900 dark:text-white truncate leading-tight">{p.name}</span>
+                      <span className="block text-[11px] font-bold text-slate-600 dark:text-sky-200 truncate leading-tight">
                         {getAvatarDisplayName(p.avatar, lang)}
                       </span>
                     </span>
                   </span>
-                  <span className="text-rose-700 shrink-0">
+                  <span className="text-amber-800 dark:text-amber-300 shrink-0">
                     {p.score} {t('scoreUnit')}
                   </span>
                 </div>

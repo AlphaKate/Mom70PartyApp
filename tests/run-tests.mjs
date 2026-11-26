@@ -1,6 +1,8 @@
 // Comprehensive Automated Test Suite for Mom v7.0 (Mom70PartyApp)
 // Tests real production modules directly via Vite SSR Loader + React SSR
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -689,6 +691,80 @@ try {
         );
       }
     }
+  });
+
+  // =========================================================================
+  console.log('\n--- Suite 09: Dual-Mode (Day & Night) Color & Contrast Guardrails ---');
+
+  await runTest('TC-THEME-01: index.css uses unlayered :where(.dark) fallbacks with zero !important overrides', () => {
+    const cssPath = path.resolve(process.cwd(), 'src', 'index.css');
+    const css = fs.readFileSync(cssPath, 'utf8');
+    const cssWithoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!cssWithoutComments.includes('!important'), 'src/index.css must not use !important so Tailwind dark:* utilities always win');
+    assert.ok(!cssWithoutComments.includes('@layer components'), 'Do not place .dark fallbacks in @layer components (avoids Tailwind variant synthesis)');
+    assert.ok(cssWithoutComments.includes(':where(.dark) .bg-white'), 'Dark fallback rules must use unlayered :where(.dark) selectors (specificity 0,1,0)');
+    assert.ok(!cssWithoutComments.includes('\n  .dark .bg-white') && !cssWithoutComments.includes('\n.dark .bg-white'), 'Automatic .bg-white fallback must not use plain .dark (specificity 0,2,0)');
+  });
+
+  await runTest('TC-THEME-02: All pastel gradient cards across src/**/*.tsx declare dark:from-* overrides', () => {
+    const srcDir = path.resolve(process.cwd(), 'src');
+    const tsxFiles = [];
+    const collectTsx = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) collectTsx(full);
+        else if (entry.name.endsWith('.tsx')) tsxFiles.push(full);
+      }
+    };
+    collectTsx(srcDir);
+    assert.ok(tsxFiles.length > 0, 'Expected .tsx component files under src/');
+
+    const lightGradientPattern =
+      /bg-gradient-to-(?:r|l|t|b|tr|tl|br|bl)\b[^"'`]*?\bfrom-(?:(?:amber|yellow|rose|pink|orange|slate|emerald|sky|fuchsia|violet|purple)-(?:50|100|200|300)|white)(?:\/\d+)?\b/;
+
+    const violations = [];
+    for (const file of tsxFiles) {
+      const content = fs.readFileSync(file, 'utf8');
+      const lines = content.split(/\r?\n/);
+      lines.forEach((line, idx) => {
+        if (!line.includes('bg-gradient-to-')) return;
+        const segments = line.match(/(?:"[^"]*"|'[^']*'|`[^`]*`)/g) || [line];
+        for (const seg of segments) {
+          if (lightGradientPattern.test(seg) && !seg.includes('dark:from-')) {
+            violations.push(`${path.relative(srcDir, file)}:${idx + 1}: ${seg.trim()}`);
+          }
+        }
+      });
+    }
+
+    assert.deepEqual(
+      violations,
+      [],
+      `Found pastel gradients missing dark:from-* override:\n${violations.join('\n')}`
+    );
+  });
+
+  await runTest('TC-THEME-03: FinalePodium uses dual-mode dark/light gold-silver-bronze gradients and neutral standings without rose-on-gold clashes', () => {
+    const samplePlayers = [
+      { id: 'p1', name: 'עי', avatar: 'fairy_nap', score: 100, progress: 100, completedCurrentGame: true, connected: true },
+      { id: 'p2', name: 'דן', avatar: 'hero_hug', score: 80, progress: 100, completedCurrentGame: true, connected: true },
+      { id: 'p3', name: 'נועה', avatar: 'animal_cat_boss', score: 60, progress: 100, completedCurrentGame: true, connected: true },
+    ];
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        SettingsProvider,
+        { defaultLang: 'he', applyToDocument: false },
+        React.createElement(FinalePodium, { players: samplePlayers })
+      )
+    );
+
+    assert.ok(html.includes('dark:from-amber-950'), '1st place podium card must define dark gold gradient');
+    assert.ok(html.includes('dark:from-slate-800'), '2nd place podium card must define dark silver gradient');
+    assert.ok(html.includes('dark:from-orange-950'), '3rd place podium card must define dark bronze gradient');
+    assert.ok(html.includes('dark:bg-slate-800/90'), 'Full standings rows must use neutral dark slate card background');
+    assert.ok(!html.includes('text-rose-700'), 'FinalePodium must not use low-contrast rose-700 text on podium/gold cards');
+    assert.ok(!html.includes('text-rose-600'), 'FinalePodium must not use low-contrast rose-600 text on standings rows');
   });
 
   console.log('\n====================================================');

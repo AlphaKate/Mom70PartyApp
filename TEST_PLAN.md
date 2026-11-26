@@ -6,11 +6,11 @@
 | פרט | ערך |
 | :--- | :--- |
 | **שם המסמך** | Software Test Plan & Software Test Description (STP / STD) |
-| **גרסת מסמך** | 1.2 (מעודכן לגרסה `v001.002.000` — הוספת תיאור אוואטר בפודיום) |
+| **גרסת מסמך** | 1.3 (מעודכן לגרסה `v001.002.001` — שדרוג צבעים וניגודיות יום/לילה בכל המסכים) |
 | **תאריך הפקה** | נובמבר 2026 |
 | **מסמך דרישות מקושר** | [REQUIREMENTS.md](./REQUIREMENTS.md) |
 | **מאגר קוד (Repository)** | [GitHub - Mom70PartyApp](https://github.com/AlphaKate/Mom70PartyApp) |
-| **סטטוס ריצת בדיקות אוטומטיות** | **28 / 28 עברו בהצלחה (100% Pass Rate — כולל תיאור אוואטר בפודיום ב-3 שפות, ניהול גרסה `XXX.YYY.ZZZ`, 10–12 תמונות, 5 ברכות + סלפי ו-WebRTC Chunking)** |
+| **סטטוס ריצת בדיקות אוטומטיות** | **31 / 31 עברו בהצלחה (100% Pass Rate — כולל בקרות צבעים וניגודיות יום/לילה, תיאור אוואטר בפודיום ב-3 שפות, ניהול גרסה `XXX.YYY.ZZZ`, 10–12 תמונות, 5 ברכות + סלפי ו-WebRTC Chunking)** |
 
 ---
 
@@ -274,15 +274,20 @@ flowchart LR
 --- Suite 08: Finale Podium & Avatar Descriptions (REQ-FIN-001, REQ-FIN-003) ---
   ✅ PASS: TC-FIN-01: FinalePodium displays localized avatar description alongside player name in he, ru, en
 
+--- Suite 09: Dual-Mode (Day & Night) Color & Contrast Guardrails ---
+  ✅ PASS: TC-THEME-01: index.css uses unlayered :where(.dark) fallbacks with zero !important overrides
+  ✅ PASS: TC-THEME-02: All pastel gradient cards across src/**/*.tsx declare dark:from-* overrides
+  ✅ PASS: TC-THEME-03: FinalePodium uses dual-mode dark/light gold-silver-bronze gradients and neutral standings without rose-on-gold clashes
+
 ====================================================
-📊 Test Execution Summary: 28 Passed | 0 Failed
+📊 Test Execution Summary: 31 Passed | 0 Failed
 ====================================================
 ```
 
 בנוסף, בדיקת בנייה מלאה (`npm run build`: `tsc && vite build`) הסתיימה בהצלחה מלאה:
 - **0 שגיאות קומפילציה.**
 - **2,156 מודולים עובדו בהצלחה.**
-- **משקל קוד מכווץ (gzip): `137.64 KB`** (עומד בדרישת `REQ-PERF-003` של מתחת ל-250KB).
+- **משקל קוד מכווץ (gzip): JS `139.52 KB`, CSS `11.84 KB`** (עומד בדרישת `REQ-PERF-003` של מתחת ל-250KB).
 
 ---
 

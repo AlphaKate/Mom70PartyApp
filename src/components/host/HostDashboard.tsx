@@ -774,32 +774,32 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             <button
               type="button"
               onClick={onBackHome}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-white border border-rose-200 text-rose-700 font-bold text-sm shadow-sm transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-white dark:bg-slate-900/90 dark:hover:bg-slate-800 border border-rose-200 dark:border-slate-700 text-rose-700 dark:text-slate-100 font-bold text-sm shadow-sm transition-colors"
             >
               <Home className="w-4 h-4" aria-hidden="true" />
               <span>{t('backToHome')}</span>
             </button>
           )}
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-amber-200 shadow-sm text-xs sm:text-sm font-bold">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-amber-200 dark:border-slate-700 shadow-sm text-xs sm:text-sm font-bold">
             {connectionStatus === 'ready' ? (
               <>
-                <Wifi className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                <span className="text-emerald-800">{t('onlineMode')}</span>
+                <Wifi className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                <span className="text-emerald-800 dark:text-emerald-300">{t('onlineMode')}</span>
               </>
             ) : connectionStatus === 'local-only' ? (
               <>
-                <Wifi className="w-4 h-4 text-sky-600" aria-hidden="true" />
-                <span className="text-sky-800">{t('localMode')}</span>
+                <Wifi className="w-4 h-4 text-sky-600 dark:text-sky-400" aria-hidden="true" />
+                <span className="text-sky-800 dark:text-sky-300">{t('localMode')}</span>
               </>
             ) : (
               <>
-                <WifiOff className="w-4 h-4 text-amber-600" aria-hidden="true" />
-                <span className="text-amber-800">{t('connecting')}</span>
+                <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                <span className="text-amber-800 dark:text-amber-300">{t('connecting')}</span>
               </>
             )}
-            <span className="text-slate-300">|</span>
-            <span className="text-rose-700 font-black tracking-wider">
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-rose-700 dark:text-amber-300 font-black tracking-wider">
               #{gameState.roomCode}
             </span>
           </div>
@@ -810,17 +810,17 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
       {/* SETUP PHASE */}
       {gameState.phase === 'SETUP' && (
-        <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-xl p-5 sm:p-8 space-y-6">
+        <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-xl p-5 sm:p-8 space-y-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs sm:text-sm font-extrabold shadow-sm">
                 <Sparkles className="w-4 h-4" aria-hidden="true" />
                 {t('birthdayBadge')}
               </span>
-              <h1 className="text-2xl sm:text-4xl font-black text-rose-900">
+              <h1 className="text-2xl sm:text-4xl font-black text-rose-900 dark:text-white">
                 {t('setupTitle')}
               </h1>
-              <p className="text-sm sm:text-base text-slate-600 max-w-2xl">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl">
                 {t('setupSubtitle')}
               </p>
             </div>
@@ -828,9 +828,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             <button
               type="button"
               onClick={() => setShowGuideModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-300 text-amber-900 font-extrabold text-sm shadow-sm transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 font-extrabold text-sm shadow-sm transition-colors"
             >
-              <HelpCircle className="w-5 h-5 text-amber-600" aria-hidden="true" />
+              <HelpCircle className="w-5 h-5 text-amber-600 dark:text-amber-300" aria-hidden="true" />
               <span>{t('openGuideBtn')}</span>
             </button>
           </div>
@@ -838,7 +838,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           <form onSubmit={handleOpenLobby} className="space-y-4">
             {/* Mom's Name */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-extrabold text-slate-800">
+              <label className="block text-sm font-extrabold text-slate-800 dark:text-slate-200">
                 {t('momNameLabel')}
               </label>
               <input
@@ -846,15 +846,15 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 value={customMomName}
                 onChange={(e) => setCustomMomName(e.target.value)}
                 placeholder={DEFAULT_GAME_CONTENT.momName[lang]}
-                className="w-full rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-base bg-white outline-none transition-all"
+                className="w-full rounded-2xl border-2 border-rose-200 dark:border-slate-600 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:focus:ring-rose-500/20 px-4 py-3 text-base bg-white dark:bg-slate-800 dark:text-white outline-none transition-all"
               />
             </div>
 
             {/* Google Drive Folder or Photo Links */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800">
-                  <FolderOpen className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                  <FolderOpen className="w-4 h-4 text-sky-600 dark:text-sky-400" aria-hidden="true" />
                   <span>{t('driveFolderLabel')}</span>
                 </label>
 
@@ -871,9 +871,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                     type="button"
                     disabled={uploadProgress !== null}
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 disabled:opacity-60 border border-purple-300 text-purple-900 font-extrabold text-xs sm:text-sm transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:hover:bg-purple-900/70 disabled:opacity-60 border border-purple-300 dark:border-purple-500/60 text-purple-900 dark:text-purple-200 font-extrabold text-xs sm:text-sm transition-colors"
                   >
-                    <Upload className="w-4 h-4 text-purple-600" aria-hidden="true" />
+                    <Upload className="w-4 h-4 text-purple-600 dark:text-purple-300" aria-hidden="true" />
                     <span>
                       {uploadProgress
                         ? `${t('loading')} (${uploadProgress.done}/${uploadProgress.total})`
@@ -885,9 +885,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                     type="button"
                     disabled={!driveUrlInput.trim() || isPreviewingDrive}
                     onClick={handlePreviewDrivePhotos}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 disabled:opacity-45 border border-sky-300 text-sky-900 font-extrabold text-xs sm:text-sm transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/70 disabled:opacity-45 border border-sky-300 dark:border-sky-500/60 text-sky-900 dark:text-sky-200 font-extrabold text-xs sm:text-sm transition-colors"
                   >
-                    <ImageIcon className="w-4 h-4 text-sky-600" aria-hidden="true" />
+                    <ImageIcon className="w-4 h-4 text-sky-600 dark:text-sky-300" aria-hidden="true" />
                     <span>
                       {isPreviewingDrive
                         ? t('previewingDrivePhotos')
@@ -908,21 +908,21 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                   }
                 }}
                 placeholder={t('driveFolderPlaceholder')}
-                className="w-full rounded-2xl border-2 border-sky-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 px-4 py-2.5 text-sm sm:text-base bg-white outline-none transition-all resize-y"
+                className="w-full rounded-2xl border-2 border-sky-200 dark:border-slate-600 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-500/20 px-4 py-2.5 text-sm sm:text-base bg-white dark:bg-slate-800 dark:text-white outline-none transition-all resize-y"
               />
-              <p className="text-xs text-slate-500">{t('driveFolderHint')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t('driveFolderHint')}</p>
 
               {previewDrivePhotos.length > 0 && (
-                <div className="rounded-2xl bg-sky-50 border border-sky-200 p-3 space-y-2">
+                <div className="rounded-2xl bg-sky-50 dark:bg-slate-800/90 border border-sky-200 dark:border-sky-500/40 p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 text-xs font-extrabold">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                       <span>{t('drivePhotosLoadedBadge', { count: previewDrivePhotos.length })}</span>
                     </div>
                     <button
                       type="button"
                       onClick={handleClearPhotos}
-                      className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-800 font-bold px-2 py-0.5 rounded-lg hover:bg-rose-50 transition-colors"
+                      className="inline-flex items-center gap-1 text-xs text-rose-600 dark:text-rose-300 hover:text-rose-800 dark:hover:text-rose-200 font-bold px-2 py-0.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>{t('clearPhotosBtn')}</span>
@@ -934,7 +934,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                         key={photoUrl}
                         src={photoUrl}
                         alt={`Drive #${idx + 1}`}
-                        className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm bg-white"
+                        className="w-14 h-14 rounded-xl object-cover border-2 border-white dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900"
                       />
                     ))}
                   </div>
@@ -942,7 +942,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               )}
 
               {drivePreviewChecked && previewDrivePhotos.length === 0 && driveUrlInput.trim() && (
-                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3.5 space-y-2.5 text-xs sm:text-sm font-medium text-amber-900">
+                <div className="rounded-2xl bg-amber-50 dark:bg-slate-800/90 border border-amber-200 dark:border-amber-500/50 p-3.5 space-y-2.5 text-xs sm:text-sm font-medium text-amber-900 dark:text-amber-200">
                   <p>{t('drivePhotosNotFoundNote')}</p>
                   <div className="pt-1">
                     <button
@@ -960,8 +960,8 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
             {/* Google Sheets Questions */}
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800">
-                <FileSpreadsheet className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+              <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>{t('sheetsUrlLabel')}</span>
               </label>
               <input
@@ -970,14 +970,14 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 value={sheetsUrlInput}
                 onChange={(e) => setSheetsUrlInput(e.target.value)}
                 placeholder={t('sheetsUrlPlaceholder')}
-                className="w-full rounded-2xl border-2 border-amber-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-100 px-4 py-3 text-base bg-white outline-none transition-all"
+                className="w-full rounded-2xl border-2 border-amber-200 dark:border-slate-600 focus:border-amber-400 focus:ring-4 focus:ring-amber-100 dark:focus:ring-amber-500/20 px-4 py-3 text-base bg-white dark:bg-slate-800 dark:text-white outline-none transition-all"
               />
-              <p className="text-xs text-slate-500">{t('sheetsUrlHint')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t('sheetsUrlHint')}</p>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" aria-hidden="true" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 text-xs sm:text-sm font-bold">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                 <span>{t('demoDataNote')}</span>
               </div>
 
@@ -996,16 +996,16 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
       {/* ALWAYS-VISIBLE MANUAL HOST PACING CONTROLS (when past SETUP) */}
       {gameState.phase !== 'SETUP' && (
-        <div className="rounded-2xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-md p-3 sm:p-4 space-y-3">
+        <div className="rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-md p-3 sm:p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs sm:text-sm font-black">
                 {t('hostControlsTitle')}
               </span>
-              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs sm:text-sm font-extrabold">
+              <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 border border-transparent dark:border-amber-500/40 text-xs sm:text-sm font-extrabold">
                 {t(PHASE_LABEL_KEYS[gameState.phase])}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold">
                 <Users className="w-3.5 h-3.5" aria-hidden="true" />
                 {playersList.length}
               </span>
@@ -1019,7 +1019,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-extrabold text-xs sm:text-sm border-2 transition-all ${
                   gameState.isPaused
                     ? 'bg-emerald-500 hover:bg-emerald-600 border-emerald-600 text-white shadow'
-                    : 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900'
+                    : 'bg-amber-50 hover:bg-amber-100 dark:bg-slate-800 dark:hover:bg-slate-700 border-amber-300 dark:border-amber-500/60 text-amber-900 dark:text-amber-200'
                 }`}
               >
                 {gameState.isPaused ? (
@@ -1041,7 +1041,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                     type="button"
                     disabled={gameState.currentQuestionIndex <= 0}
                     onClick={() => handleQuestionStep(-1)}
-                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-800 font-bold text-xs sm:text-sm transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm transition-colors"
                   >
                     <SkipBack className="w-4 h-4" aria-hidden="true" />
                     <span>{t('prevQuestion')}</span>
@@ -1112,8 +1112,8 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           </div>
 
           {/* Stage Jumper Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-rose-100">
-            <span className="text-xs font-extrabold text-slate-500 me-1">{t('jumpToStage')}</span>
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-rose-100 dark:border-slate-800">
+            <span className="text-xs font-extrabold text-slate-500 dark:text-slate-400 me-1">{t('jumpToStage')}</span>
             {STAGE_SEQUENCE.map((stage) => {
               const active = gameState.phase === stage;
               return (
@@ -1124,7 +1124,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                   className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all ${
                     active
                       ? 'bg-rose-600 text-white shadow-sm'
-                      : 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200'
+                      : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600'
                   }`}
                 >
                   {t(PHASE_LABEL_KEYS[stage])}
@@ -1137,12 +1137,12 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
       {/* PAUSED BANNER */}
       {gameState.phase !== 'SETUP' && gameState.isPaused && (
-        <div className="rounded-2xl bg-amber-100 border-2 border-amber-400 px-4 py-3 flex items-center justify-between gap-3 shadow-sm">
+        <div className="rounded-2xl bg-amber-100 dark:bg-amber-950/80 border-2 border-amber-400 dark:border-amber-500/70 px-4 py-3 flex items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-3">
-            <Pause className="w-6 h-6 text-amber-700 shrink-0" aria-hidden="true" />
+            <Pause className="w-6 h-6 text-amber-700 dark:text-amber-300 shrink-0" aria-hidden="true" />
             <div>
-              <p className="font-black text-amber-950">{t('pausedBannerTitle')}</p>
-              <p className="text-sm text-amber-900">{t('pausedBannerDesc')}</p>
+              <p className="font-black text-amber-950 dark:text-amber-100">{t('pausedBannerTitle')}</p>
+              <p className="text-sm text-amber-900 dark:text-amber-200">{t('pausedBannerDesc')}</p>
             </div>
           </div>
           <button
@@ -1159,19 +1159,19 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       {gameState.phase === 'LOBBY' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Room PIN & QR Code */}
-          <div className="lg:col-span-5 rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-xl p-6 text-center space-y-5">
+          <div className="lg:col-span-5 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-xl p-6 text-center space-y-5">
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 font-extrabold text-xs">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 dark:bg-amber-400/20 text-rose-800 dark:text-amber-200 font-extrabold text-xs">
                 <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                 {momNameDisplay}
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-rose-900">
+              <h2 className="text-2xl sm:text-3xl font-black text-rose-900 dark:text-white">
                 {t('lobbyTitle')}
               </h2>
-              <p className="text-sm text-slate-600">{t('lobbySubtitle')}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{t('lobbySubtitle')}</p>
             </div>
 
-            <div className="inline-block rounded-3xl bg-white p-4 border-4 border-amber-300 shadow-md">
+            <div className="inline-block rounded-3xl bg-white dark:bg-white p-4 border-4 border-amber-300 dark:border-amber-400 shadow-md">
               <QRCodeSVG
                 value={joinUrl}
                 size={compact ? 140 : 196}
@@ -1179,34 +1179,34 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 bgColor="#ffffff"
                 fgColor="#0f172a"
               />
-              <p className="mt-2 text-xs font-extrabold text-slate-500 uppercase tracking-wide">
+              <p className="mt-2 text-xs font-extrabold text-slate-700 dark:text-slate-800 uppercase tracking-wide">
                 {t('scanQrLabel')}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-amber-50 border-2 border-rose-200 p-4 space-y-2">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-rose-600">
+            <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-amber-50 dark:from-slate-800 dark:to-slate-900 border-2 border-rose-200 dark:border-amber-500/50 p-4 space-y-2">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-rose-700 dark:text-amber-300">
                 {t('roomCodeLabel')}
               </p>
               <p
                 dir="ltr"
-                className="text-4xl sm:text-5xl font-black tracking-[0.22em] text-rose-900 select-all"
+                className="text-4xl sm:text-5xl font-black tracking-[0.22em] text-rose-900 dark:text-white select-all"
               >
                 {gameState.roomCode}
               </p>
               <button
                 type="button"
                 onClick={handleCopyJoinLink}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-xs font-bold text-slate-700 shadow-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-rose-200 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-100 shadow-sm transition-colors"
               >
                 {copiedLink ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
-                    <span className="text-emerald-700">{t('joinLinkLabel')} ✓</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    <span className="text-emerald-700 dark:text-emerald-300">{t('joinLinkLabel')} ✓</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-rose-500" aria-hidden="true" />
+                    <Copy className="w-3.5 h-3.5 text-rose-500 dark:text-amber-300" aria-hidden="true" />
                     <span>{t('joinLinkLabel')}</span>
                   </>
                 )}
@@ -1215,11 +1215,11 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           </div>
 
           {/* Connected Players + Actions */}
-          <div className="lg:col-span-7 rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 shadow-xl p-6 flex flex-col justify-between space-y-5">
+          <div className="lg:col-span-7 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 shadow-xl p-6 flex flex-col justify-between space-y-5">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
-                  <Users className="w-6 h-6 text-rose-500" aria-hidden="true" />
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <Users className="w-6 h-6 text-rose-500 dark:text-amber-400" aria-hidden="true" />
                   <span>
                     {t('playersConnected')} ({playersList.length})
                   </span>
@@ -1228,7 +1228,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 <button
                   type="button"
                   onClick={handleAddDemoBot}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-extrabold text-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/70 border border-sky-200 dark:border-sky-500/50 text-sky-800 dark:text-sky-200 font-extrabold text-sm transition-colors"
                 >
                   <UserPlus className="w-4 h-4" aria-hidden="true" />
                   <span>{t('addDemoBot')}</span>
@@ -1236,24 +1236,24 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               </div>
 
               {playersList.length === 0 ? (
-                <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 p-10 text-center space-y-2">
+                <div className="rounded-2xl border-2 border-dashed border-amber-300 dark:border-slate-600 bg-amber-50/40 dark:bg-slate-800/60 p-10 text-center space-y-2">
                   <p className="text-4xl animate-float-gentle">🎈</p>
-                  <p className="text-lg font-bold text-slate-600">{t('noPlayersYet')}</p>
+                  <p className="text-lg font-bold text-slate-600 dark:text-slate-300">{t('noPlayersYet')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {playersList.map((player) => (
                     <div
                       key={player.id}
-                      className="rounded-2xl bg-gradient-to-br from-white to-rose-50/70 border-2 border-rose-200 p-3 flex items-center gap-2.5 shadow-sm"
+                      className="rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/90 border-2 border-slate-200 dark:border-slate-700 p-3 flex items-center gap-2.5 shadow-sm"
                     >
                       <AvatarDisplay
                         avatar={player.avatar}
                         className="w-8 h-8 shrink-0 drop-shadow-sm"
                       />
                       <div className="min-w-0">
-                        <p className="font-extrabold text-slate-900 truncate">{player.name}</p>
-                        <p className="text-[11px] font-bold text-emerald-600">
+                        <p className="font-extrabold text-slate-900 dark:text-white truncate">{player.name}</p>
+                        <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
                           {player.id.startsWith('bot-') ? t('botSimulated') : t('connected')}
                         </p>
                       </div>
@@ -1279,22 +1279,22 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       {(gameState.phase === 'MEMORY' || gameState.phase === 'PUZZLE') && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Progress Race Tracks */}
-          <div className="lg:col-span-8 rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 shadow-xl p-5 sm:p-6 space-y-4">
+          <div className="lg:col-span-8 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-rose-200 dark:border-slate-700 shadow-xl p-5 sm:p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-rose-900">
+                <h2 className="text-2xl sm:text-3xl font-black text-rose-900 dark:text-white">
                   {gameState.phase === 'MEMORY' ? t('memoryTitle') : t('puzzleTitle')}
                 </h2>
-                <p className="text-sm font-bold text-slate-600">{t('liveRace')}</p>
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">{t('liveRace')}</p>
               </div>
               {gameState.phase === 'PUZZLE' && activePuzzle && (
-                <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-3.5 py-2 shadow-sm">
+                <div className="flex items-center gap-2.5 bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-amber-500/40 rounded-2xl px-3.5 py-2 shadow-sm">
                   <DriveImage
                     src={activePuzzle.imageUrl}
                     alt={activePuzzle.title[lang] || activePuzzle.title.en}
-                    className="w-12 h-12 rounded-xl object-cover border border-amber-300 bg-white"
+                    className="w-12 h-12 rounded-xl object-cover border border-amber-300 dark:border-amber-500/50 bg-white dark:bg-slate-900"
                   />
-                  <span className="text-sm font-extrabold text-amber-900">
+                  <span className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
                     {activePuzzle.title[lang] || activePuzzle.title.en}
                   </span>
                 </div>
@@ -1302,15 +1302,15 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             </div>
 
             {gameState.phase === 'MEMORY' && gameState.content.memoryPairs.length > 0 && (
-              <div className="rounded-2xl bg-rose-50/70 border border-rose-200 p-3 space-y-2">
-                <p className="text-xs font-extrabold text-rose-800">{t('activePhotosGallery')}</p>
+              <div className="rounded-2xl bg-rose-50/70 dark:bg-slate-800/80 border border-rose-200 dark:border-slate-700 p-3 space-y-2">
+                <p className="text-xs font-extrabold text-rose-800 dark:text-amber-200">{t('activePhotosGallery')}</p>
                 <div className="flex flex-wrap gap-2">
                   {gameState.content.memoryPairs.map((pair) => (
                     <DriveImage
                       key={pair.id}
                       src={pair.imageA}
                       alt={pair.labelA[lang] || pair.labelA.en}
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border-2 border-white shadow-sm bg-white"
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border-2 border-white dark:border-slate-600 shadow-sm bg-white dark:bg-slate-900"
                     />
                   ))}
                 </div>
@@ -1318,18 +1318,18 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             )}
 
             {gameState.phase === 'PUZZLE' && gameState.content.puzzles.length > 1 && (
-              <div className="rounded-2xl bg-amber-50/70 border border-amber-200 p-3 space-y-2">
-                <p className="text-xs font-extrabold text-amber-900">{t('activePhotosGallery')}</p>
+              <div className="rounded-2xl bg-amber-50/70 dark:bg-slate-800/80 border border-amber-200 dark:border-slate-700 p-3 space-y-2">
+                <p className="text-xs font-extrabold text-amber-900 dark:text-amber-200">{t('activePhotosGallery')}</p>
                 <div className="flex flex-wrap gap-2">
                   {gameState.content.puzzles.map((puz, idx) => (
                     <DriveImage
                       key={puz.id}
                       src={puz.imageUrl}
                       alt={puz.title[lang] || puz.title.en}
-                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover bg-white transition-all ${
+                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover bg-white dark:bg-slate-900 transition-all ${
                         idx === gameState.currentQuestionIndex % gameState.content.puzzles.length
-                          ? 'border-2 border-rose-500 ring-2 ring-rose-300 scale-105 shadow-md'
-                          : 'border-2 border-white opacity-75'
+                          ? 'border-2 border-rose-500 ring-2 ring-rose-300 dark:ring-amber-400/50 scale-105 shadow-md'
+                          : 'border-2 border-white dark:border-slate-700 opacity-75'
                       }`}
                     />
                   ))}
@@ -1338,13 +1338,13 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             )}
 
             {racePlayers.length === 0 ? (
-              <p className="text-center py-8 text-slate-500 font-bold">{t('noPlayersYet')}</p>
+              <p className="text-center py-8 text-slate-500 dark:text-slate-400 font-bold">{t('noPlayersYet')}</p>
             ) : (
               <div className="space-y-3">
                 {racePlayers.map((player) => (
                   <div
                     key={player.id}
-                    className="rounded-2xl bg-rose-50/60 border border-rose-200 p-3 space-y-2"
+                    className="rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 p-3 space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
@@ -1352,7 +1352,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                           avatar={player.avatar}
                           className="w-8 h-8 shrink-0 drop-shadow-sm"
                         />
-                        <span className="font-extrabold text-slate-900 truncate">
+                        <span className="font-extrabold text-slate-900 dark:text-white truncate">
                           {player.name}
                         </span>
                         {player.completedCurrentGame && (
@@ -1362,32 +1362,32 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                           </span>
                         )}
                         {player.finishRank === 1 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-xs font-black shadow-sm animate-pulse">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 dark:bg-amber-400 dark:text-slate-950 text-xs font-black shadow-sm animate-pulse">
                             {t('arrivalMedalGold')}
                           </span>
                         )}
                         {player.finishRank === 2 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-300 text-slate-900 text-xs font-black shadow-sm">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-300 text-slate-900 dark:bg-slate-200 dark:text-slate-950 text-xs font-black shadow-sm">
                             {t('arrivalMedalSilver')}
                           </span>
                         )}
                         {player.finishRank === 3 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-100 text-xs font-black shadow-sm">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-50 dark:bg-amber-700 dark:text-amber-50 text-xs font-black shadow-sm">
                             {t('arrivalMedalBronze')}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-sm font-black text-rose-700">
+                        <span className="text-sm font-black text-rose-700 dark:text-sky-300">
                           {player.progress}%
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-extrabold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 text-xs font-extrabold">
                           {player.score} {t('scoreUnit')}
                         </span>
                       </div>
                     </div>
 
-                    <div className="w-full h-4 rounded-full bg-white border border-rose-200 overflow-hidden">
+                    <div className="w-full h-4 rounded-full bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           player.completedCurrentGame
@@ -1404,28 +1404,28 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           </div>
 
           {/* Live Overall Leaderboard */}
-          <div className="lg:col-span-4 rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 shadow-xl p-5 space-y-4">
-            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-amber-500" aria-hidden="true" />
+          <div className="lg:col-span-4 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 shadow-xl p-5 space-y-4">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500 dark:text-amber-400" aria-hidden="true" />
               <span>{t('liveLeaderboard')}</span>
             </h3>
             <div className="space-y-2">
               {sortedLeaderboard.map((player, idx) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl bg-amber-50/70 border border-amber-200 px-3 py-2.5"
+                  className="flex items-center justify-between gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-2.5"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-amber-500 dark:bg-amber-400 text-white dark:text-slate-950 text-xs font-black flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
                     <AvatarDisplay
                       avatar={player.avatar}
                       className="w-7 h-7 shrink-0 drop-shadow-sm"
                     />
-                    <span className="font-extrabold text-slate-900 truncate">{player.name}</span>
+                    <span className="font-extrabold text-slate-900 dark:text-white truncate">{player.name}</span>
                   </div>
-                  <span className="font-black text-rose-700 text-sm shrink-0">
+                  <span className="font-black text-amber-800 dark:text-amber-300 text-sm shrink-0">
                     {player.score} {t('scoreUnit')}
                   </span>
                 </div>
@@ -1439,22 +1439,22 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       {(gameState.phase === 'TRIVIA' || gameState.phase === 'QUOTES') && activeQuestion && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Question Display on TV */}
-          <div className="lg:col-span-8 rounded-3xl bg-white/95 backdrop-blur border-2 border-sky-200 shadow-xl p-5 sm:p-7 space-y-5">
+          <div className="lg:col-span-8 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-sky-200 dark:border-slate-700 shadow-xl p-5 sm:p-7 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="px-3.5 py-1 rounded-full bg-sky-100 text-sky-900 font-black text-sm">
+              <span className="px-3.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/70 text-sky-900 dark:text-sky-200 font-black text-sm">
                 {gameState.phase === 'TRIVIA' ? t('triviaTitle') : t('quotesTitle')} —{' '}
                 {t('triviaQuestionLabel')} {gameState.currentQuestionIndex + 1} {t('ofTotal')}{' '}
                 {activeQuestionPool.length}
               </span>
 
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-sm">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 font-extrabold text-sm">
                 <Users className="w-4 h-4" aria-hidden="true" />
                 {t('answeredCount')}: {answeredPlayersCount} {t('ofTotal')} {playersList.length}
               </span>
             </div>
 
             {activeQuestion.imageUrl && (
-              <div className="rounded-2xl overflow-hidden border border-sky-200 max-h-60 flex justify-center bg-sky-50">
+              <div className="rounded-2xl overflow-hidden border border-sky-200 dark:border-slate-700 max-h-60 flex justify-center bg-sky-50 dark:bg-slate-800">
                 <DriveImage
                   src={activeQuestion.imageUrl}
                   alt={activeQuestion.question[lang] || activeQuestion.question.en}
@@ -1463,7 +1463,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               </div>
             )}
 
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-snug">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-snug">
               {activeQuestion.question[lang] || activeQuestion.question.en}
             </h2>
 
@@ -1481,9 +1481,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       className={`rounded-2xl border-2 p-4 flex items-center justify-between gap-3 transition-all ${
                         gameState.revealAnswer
                           ? isCorrect
-                            ? 'bg-emerald-50 border-emerald-500 shadow-md ring-2 ring-emerald-300'
-                            : 'bg-slate-50 border-slate-200 opacity-65'
-                          : 'bg-white border-slate-200'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 dark:border-emerald-400 shadow-md ring-2 ring-emerald-300 dark:ring-emerald-500/40'
+                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 opacity-65'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -1494,19 +1494,19 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                         >
                           {OPTION_LETTERS[idx] ?? idx + 1}
                         </span>
-                        <span className="font-bold text-slate-900 text-base sm:text-lg">
+                        <span className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
                           {optionText}
                         </span>
                       </div>
 
                       {gameState.revealAnswer && (
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-xs font-extrabold text-slate-700">
+                          <span className="px-2 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-xs font-extrabold text-slate-700 dark:text-slate-200">
                             {votesForOption}
                           </span>
                           {isCorrect && (
                             <CheckCircle2
-                              className="w-6 h-6 text-emerald-600"
+                              className="w-6 h-6 text-emerald-600 dark:text-emerald-400"
                               aria-hidden="true"
                             />
                           )}
@@ -1523,11 +1523,11 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 activeQuestion.funFact?.en ||
                 activeQuestion.funFact?.he ||
                 activeQuestion.funFact?.ru) && (
-                <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-rose-50 border-2 border-amber-300 p-4 space-y-1">
-                  <p className="text-xs font-black uppercase tracking-wider text-amber-700">
+                <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-rose-50 dark:from-slate-800 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-400/60 p-4 space-y-1">
+                  <p className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
                     {gameState.phase === 'QUOTES' ? t('quotesFunFact') : t('triviaFunFact')}
                   </p>
-                  <p className="text-base sm:text-lg font-bold text-slate-800">
+                  <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                     {activeQuestion.funFact?.[lang] ||
                       activeQuestion.funFact?.en ||
                       activeQuestion.funFact?.he ||
@@ -1537,9 +1537,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
               )}
 
             {!gameState.revealAnswer && playersList.length > 0 && (
-              <div className="rounded-2xl bg-amber-50/80 border-2 border-amber-200 p-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-                <span className="font-extrabold text-amber-900 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
+              <div className="rounded-2xl bg-amber-50/80 dark:bg-slate-800/90 border-2 border-amber-200 dark:border-amber-500/40 p-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="font-extrabold text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   <span>
                     {answeredPlayersCount === 0
                       ? t('waitingForAnswers')
@@ -1558,30 +1558,30 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           </div>
 
           {/* Live Individual Leaderboard */}
-          <div className="lg:col-span-4 rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 shadow-xl p-5 space-y-4">
-            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-amber-500" aria-hidden="true" />
+          <div className="lg:col-span-4 rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border-2 border-amber-200 dark:border-slate-700 shadow-xl p-5 space-y-4">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500 dark:text-amber-400" aria-hidden="true" />
               <span>{t('liveLeaderboard')}</span>
             </h3>
 
             {sortedLeaderboard.length === 0 ? (
-              <p className="text-sm font-bold text-slate-500">{t('noPlayersYet')}</p>
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{t('noPlayersYet')}</p>
             ) : (
               <div className="space-y-2">
                 {sortedLeaderboard.map((player, idx) => (
                   <div
                     key={player.id}
-                    className="flex items-center justify-between gap-2 rounded-2xl bg-amber-50/70 border border-amber-200 px-3 py-2.5"
+                    className="flex items-center justify-between gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-2.5"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-amber-500 dark:bg-amber-400 text-white dark:text-slate-950 text-xs font-black flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <AvatarDisplay
-                      avatar={player.avatar}
-                      className="w-7 h-7 shrink-0 drop-shadow-sm"
-                    />
-                      <span className="font-extrabold text-slate-900 truncate">
+                        avatar={player.avatar}
+                        className="w-7 h-7 shrink-0 drop-shadow-sm"
+                      />
+                      <span className="font-extrabold text-slate-900 dark:text-white truncate">
                         {player.name}
                       </span>
                     </div>
@@ -1590,23 +1590,23 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                       {gameState.revealAnswer && player.lastAnswerIndex !== undefined && (
                         player.lastAnswerCorrect ? (
                           <CheckCircle2
-                            className="w-4 h-4 text-emerald-600"
+                            className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
                             aria-label={t('correctBadge')}
                           />
                         ) : (
                           <XCircle
-                            className="w-4 h-4 text-rose-500"
+                            className="w-4 h-4 text-rose-500 dark:text-rose-400"
                             aria-label={t('wrongBadge')}
                           />
                         )
                       )}
                       {!gameState.revealAnswer && player.lastAnswerIndex !== undefined && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
-                          <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 text-xs font-black">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                           <span>{t('playerAnsweredBadge')}</span>
                         </span>
                       )}
-                      <span className="font-black text-rose-700 text-sm">
+                      <span className="font-black text-amber-800 dark:text-amber-300 text-sm">
                         {player.score} {t('scoreUnit')}
                       </span>
                     </div>
@@ -1623,10 +1623,10 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 px-1">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-rose-900">{t('wishesTitle')}</h2>
-              <p className="text-sm text-slate-600">{t('wishesSubtitle')}</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-rose-900 dark:text-white">{t('wishesTitle')}</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{t('wishesSubtitle')}</p>
             </div>
-            <span className="px-4 py-1.5 rounded-full bg-rose-100 border border-rose-300 text-rose-900 font-black text-sm">
+            <span className="px-4 py-1.5 rounded-full bg-rose-100 dark:bg-slate-800 border border-rose-300 dark:border-amber-400/50 text-rose-900 dark:text-amber-200 font-black text-sm">
               {gameState.wishes.length} {t('wishesCount')}
             </span>
           </div>
@@ -1638,13 +1638,13 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       {/* FINALE PHASE: WINNER PODIUM + CONFETTI + 70 MOSAIC */}
       {gameState.phase === 'FINALE' && (
         <div className="space-y-6">
-          <div className="rounded-3xl bg-gradient-to-br from-rose-500 via-pink-500 to-amber-500 text-white p-6 sm:p-8 text-center shadow-2xl space-y-4">
+          <div className="rounded-3xl bg-gradient-to-br from-rose-600 via-pink-600 to-amber-500 dark:from-rose-700 dark:via-fuchsia-800 dark:to-amber-700 text-white p-6 sm:p-8 text-center shadow-2xl space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur text-sm font-black">
               <Crown className="w-4 h-4" aria-hidden="true" />
               <span>{t('happy70Banner')}</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black">{t('finaleTitle')}</h2>
-            <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-white/95 max-w-2xl mx-auto">
               {t('finaleSubtitle')}
             </p>
             <button
@@ -1653,7 +1653,7 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 firePartyConfetti();
                 soundEffects.playFanfare(isMuted);
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white text-rose-700 hover:bg-amber-50 font-black text-base shadow-lg transition-transform active:scale-95"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white hover:bg-amber-50 dark:bg-slate-950 dark:hover:bg-slate-900 text-rose-700 dark:text-amber-300 border-2 border-white/80 dark:border-amber-400/70 font-black text-base shadow-lg transition-transform active:scale-95"
             >
               <PartyPopper className="w-5 h-5" aria-hidden="true" />
               <span>{t('celebrateBtn')}</span>
@@ -1675,13 +1675,13 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           aria-modal="true"
           aria-label={t('guideTitle')}
         >
-          <div className="w-full max-w-2xl rounded-3xl bg-white border-2 border-rose-200 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 border-2 border-rose-200 dark:border-slate-700 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-xl sm:text-2xl font-black text-rose-900">{t('guideTitle')}</h2>
+              <h2 className="text-xl sm:text-2xl font-black text-rose-900 dark:text-white">{t('guideTitle')}</h2>
               <button
                 type="button"
                 onClick={() => setShowGuideModal(false)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
                 aria-label={t('close')}
               >
                 <X className="w-5 h-5" />
@@ -1689,22 +1689,22 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
             </div>
 
             <div className="space-y-3">
-              <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4 space-y-1">
-                <p className="font-black text-sky-950">{t('guideStep1Title')}</p>
-                <p className="text-sm text-sky-900">{t('guideStep1Desc')}</p>
+              <div className="rounded-2xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-500/40 p-4 space-y-1">
+                <p className="font-black text-sky-950 dark:text-sky-200">{t('guideStep1Title')}</p>
+                <p className="text-sm text-sky-900 dark:text-sky-100">{t('guideStep1Desc')}</p>
               </div>
-              <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 space-y-1">
-                <p className="font-black text-emerald-950">{t('guideStep2Title')}</p>
-                <p className="text-sm text-emerald-900">{t('guideStep2Desc')}</p>
+              <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/40 p-4 space-y-1">
+                <p className="font-black text-emerald-950 dark:text-emerald-200">{t('guideStep2Title')}</p>
+                <p className="text-sm text-emerald-900 dark:text-emerald-100">{t('guideStep2Desc')}</p>
               </div>
-              <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 space-y-1">
-                <p className="font-black text-rose-950">{t('guideStep3Title')}</p>
-                <p className="text-sm text-rose-900">{t('guideStep3Desc')}</p>
+              <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-500/40 p-4 space-y-1">
+                <p className="font-black text-rose-950 dark:text-rose-200">{t('guideStep3Title')}</p>
+                <p className="text-sm text-rose-900 dark:text-rose-100">{t('guideStep3Desc')}</p>
               </div>
             </div>
 
-            <div className="rounded-2xl bg-slate-100 border border-slate-200 p-3.5 flex items-center gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" aria-hidden="true" />
+            <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3.5 flex items-center gap-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
               <span>{t('guidePrivacyNote')}</span>
             </div>
 
