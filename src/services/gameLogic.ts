@@ -1,4 +1,4 @@
-import { GamePhase, Player } from '../types/game';
+import { GamePhase, Player, WishItem } from '../types/game';
 
 export const STAGE_SEQUENCE: GamePhase[] = [
   'LOBBY',
@@ -11,6 +11,9 @@ export const STAGE_SEQUENCE: GamePhase[] = [
 ];
 
 export const MAX_PLAYER_NAME_LENGTH = 15;
+export const MAX_WISHES_PER_PLAYER = 5;
+export const MAX_WISH_TEXT_LENGTH = 120;
+export const MAX_SELFIE_DATA_URL_LENGTH = 85000;
 export const MEMORY_SPEED_BONUS_WINDOW_SEC = 60;
 export const MEMORY_SPEED_BONUS_MAX = 200;
 export const PUZZLE_SPEED_BONUS_WINDOW_SEC = 60;
@@ -155,3 +158,95 @@ export function sortLeaderboard(players: Player[]): Player[] {
     (a, b) => b.score - a.score || b.progress - a.progress || a.name.localeCompare(b.name)
   );
 }
+
+/**
+ * Validates a client-compressed selfie Data URL for safe P2P transfer (zero cloud storage).
+ */
+export function sanitizeSelfieDataUrl(raw?: string): string | undefined {
+  if (!raw || typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith('data:image/')) return undefined;
+  if (trimmed.length > MAX_SELFIE_DATA_URL_LENGTH) return undefined;
+  return trimmed;
+}
+
+export interface AddPlayerWishResult {
+  wishes: WishItem[];
+  added: boolean;
+  updated: boolean;
+  countForPlayer: number;
+}
+
+/**
+ * Adds or updates a player's wish in the mosaic list, enforcing up to MAX_WISHES_PER_PLAYER (5) wishes per player.
+ */
+export function addPlayerWish(
+  existingWishes: WishItem[],
+  incomingWish: WishItem
+): AddPlayerWishResult {
+  const cleanedText = (incomingWish.text ?? '').trim().slice(0, MAX_WISH_TEXT_LENGTH);
+  const currentForPlayer = existingWishes.filter((w) => w.playerId === incomingWish.playerId);
+
+  if (!cleanedText) {
+    return {
+      wishes: existingWishes,
+      added: false,
+      updated: false,
+      countForPlayer: currentForPlayer.length,
+    };
+  }
+
+  const safeSelfie = sanitizeSelfieDataUrl(incomingWish.selfieDataUrl);
+
+  // If editing an existing wish by id for the same player, update it in place
+  if (incomingWish.id) {
+    const existingIdx = existingWishes.findIndex(
+      (w) => w.id === incomingWish.id && w.playerId === incomingWish.playerId
+    );
+    if (existingIdx !== -1) {
+      const next = [...existingWishes];
+      next[existingIdx] = {
+        ...existingWishes[existingIdx],
+        ...incomingWish,
+        text: cleanedText,
+        selfieDataUrl: safeSelfie,
+      };
+      return {
+        wishes: next,
+        added: false,
+        updated: true,
+        countForPlayer: currentForPlayer.length,
+      };
+    }
+  }
+
+  // Enforce max 5 wishes per player
+  if (currentForPlayer.length >= MAX_WISHES_PER_PLAYER) {
+    return {
+      wishes: existingWishes,
+      added: false,
+      updated: false,
+      countForPlayer: currentForPlayer.length,
+    };
+  }
+
+  const wishId =
+    incomingWish.id ||
+    `${incomingWish.playerId}-w-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+  const nextWish: WishItem = {
+    ...incomingWish,
+    id: wishId,
+    text: cleanedText,
+    selfieDataUrl: safeSelfie,
+    createdAt: incomingWish.createdAt ?? Date.now(),
+  };
+
+  return {
+    wishes: [...existingWishes, nextWish],
+    added: true,
+    updated: false,
+    countForPlayer: currentForPlayer.length + 1,
+  };
+}
+

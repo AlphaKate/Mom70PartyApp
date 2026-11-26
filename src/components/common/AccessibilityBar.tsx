@@ -3,6 +3,7 @@ import { Globe, Moon, Settings as SettingsIcon, Sun, Volume2, VolumeX } from 'lu
 import { useSettings } from '../../context/SettingsContext';
 import { FontScale, Language } from '../../types/game';
 import { soundEffects } from '../../services/contentService';
+import { APP_VERSION } from '../../constants/version';
 import { SettingsModal } from './SettingsModal';
 
 interface AccessibilityBarProps {
@@ -63,30 +64,44 @@ export const AccessibilityBar: React.FC<AccessibilityBarProps> = ({
           compact ? 'px-2 py-1.5' : 'px-3.5 py-2'
         } ${className}`}
       >
-        {/* Language Selector */}
-        <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t('languageLabel')}>
-          <Globe className="w-4 h-4 text-rose-500 shrink-0" aria-hidden="true" />
-          <div className="inline-flex rounded-xl bg-rose-50/90 dark:bg-slate-800 p-0.5 border border-rose-100 dark:border-slate-700">
-            {LANGUAGES.map(({ code, labelKey }) => {
-              const active = lang === code;
-              return (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => setLang(code)}
-                  aria-pressed={active}
-                  className={`rounded-lg font-bold transition-all touch-manipulation ${
-                    compact ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-xs sm:text-sm'
-                  } ${
-                    active
-                      ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm'
-                      : 'text-slate-700 dark:text-slate-300 hover:text-rose-700 hover:bg-white/70 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {t(labelKey)}
-                </button>
-              );
-            })}
+        {/* Language Selector & Version Badge */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            dir="ltr"
+            data-testid="app-version"
+            title={`${t('versionLabel')} ${APP_VERSION}`}
+            aria-label={`${t('versionLabel')} ${APP_VERSION}`}
+            className={`inline-flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-slate-600 dark:text-slate-300 select-all ${
+              compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-1 text-xs'
+            }`}
+          >
+            v{APP_VERSION}
+          </span>
+
+          <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t('languageLabel')}>
+            <Globe className="w-4 h-4 text-rose-500 shrink-0" aria-hidden="true" />
+            <div className="inline-flex rounded-xl bg-rose-50/90 dark:bg-slate-800 p-0.5 border border-rose-100 dark:border-slate-700">
+              {LANGUAGES.map(({ code, labelKey }) => {
+                const active = lang === code;
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => setLang(code)}
+                    aria-pressed={active}
+                    className={`rounded-lg font-bold transition-all touch-manipulation ${
+                      compact ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-xs sm:text-sm'
+                    } ${
+                      active
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm'
+                        : 'text-slate-700 dark:text-slate-300 hover:text-rose-700 hover:bg-white/70 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

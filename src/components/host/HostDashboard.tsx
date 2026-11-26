@@ -14,7 +14,6 @@ import {
   Home,
   Image as ImageIcon,
   Medal,
-  Music,
   PartyPopper,
   Pause,
   Play,
@@ -40,11 +39,14 @@ import {
   DEFAULT_GAME_CONTENT,
   getDriveImageEndpoints,
   loadContentFromGoogleDrive,
+  MAX_MEMORY_PHOTO_PAIRS,
   resolveDrivePhotos,
   soundEffects,
 } from '../../services/contentService';
+import { compressGamePhotoFilesSequentially } from '../../services/imageService';
 import { HostConnectionStatus, HostP2PManager } from '../../services/p2pService';
 import {
+  addPlayerWish,
   calcTriviaPoints,
   getArrivalMedalBonus,
   normalizeRoomCode,
@@ -54,7 +56,6 @@ import {
 } from '../../services/gameLogic';
 import { GamePhase, GameState, Language, P2PMessage, Player } from '../../types/game';
 import { AccessibilityBar } from '../common/AccessibilityBar';
-import { SpotifyPlayer } from '../common/SpotifyPlayer';
 import { HostMosaic70 } from '../games';
 
 export interface HostDashboardProps {
@@ -206,10 +207,12 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
   const [driveUrlInput, setDriveUrlInput] = useState('');
   const [sheetsUrlInput, setSheetsUrlInput] = useState('');
-  const [spotifyUrlInput, setSpotifyUrlInput] = useState('');
   const [customMomName, setCustomMomName] = useState('');
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [isPreviewingDrive, setIsPreviewingDrive] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(
+    null
+  );
   const [previewDrivePhotos, setPreviewDrivePhotos] = useState<string[]>([]);
   const [drivePreviewChecked, setDrivePreviewChecked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -325,32 +328,28 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
 
       if (msg.type === 'PLAYER_WISH') {
         const wish = msg.payload;
-        const cleanedText = wish.text.trim();
-        if (!cleanedText) return prev;
+        const result = addPlayerWish(prev.wishes, wish);
+        if (!result.added && !result.updated) return prev;
 
         const existing = prev.players[wish.playerId];
-        const alreadyWished = Boolean(existing?.wish);
-        const filteredWishes = prev.wishes.filter((w) => w.playerId !== wish.playerId);
-        const nextWishes = [
-          ...filteredWishes,
-          {
-            ...wish,
-            text: cleanedText,
-          },
-        ];
+        const earnedWishPoints = result.added
+          ? result.countForPlayer === 1
+            ? 100
+            : 25
+          : 0;
 
         soundEffects.playApplause(isMutedRef.current);
 
         return {
           ...prev,
-          wishes: nextWishes,
+          wishes: result.wishes,
           players: existing
             ? {
                 ...prev.players,
                 [wish.playerId]: {
                   ...existing,
-                  wish: cleanedText,
-                  score: existing.score + (alreadyWished ? 0 : 100),
+                  wish: wish.text.trim(),
+                  score: existing.score + earnedWishPoints,
                   progress: 100,
                   completedCurrentGame: true,
                   connected: true,
@@ -541,28 +540,31 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const filePromises = Array.from(files).map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === 'string') {
-            resolve(reader.result);
-          } else {
-            resolve('');
-          }
-        };
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(file);
-      });
-    });
-
-    const base64List = (await Promise.all(filePromises)).filter(Boolean);
-    if (base64List.length > 0) {
-      setPreviewDrivePhotos((prev) => Array.from(new Set([...prev, ...base64List])));
-      setDrivePreviewChecked(true);
-      soundEffects.playSuccess(isMuted);
-    }
+    const remainingSlots = Math.max(0, MAX_MEMORY_PHOTO_PAIRS - previewDrivePhotos.length);
+    const filesToProcess = Array.from(files).slice(
+      0,
+      remainingSlots > 0 ? remainingSlots : MAX_MEMORY_PHOTO_PAIRS
+    );
     e.target.value = '';
+
+    if (filesToProcess.length === 0) return;
+
+    setUploadProgress({ done: 0, total: filesToProcess.length });
+    try {
+      const compressedList = await compressGamePhotoFilesSequentially(
+        filesToProcess,
+        (done, total) => setUploadProgress({ done, total })
+      );
+      if (compressedList.length > 0) {
+        setPreviewDrivePhotos((prev) =>
+          Array.from(new Set([...prev, ...compressedList])).slice(0, MAX_MEMORY_PHOTO_PAIRS)
+        );
+        setDrivePreviewChecked(true);
+        soundEffects.playSuccess(isMuted);
+      }
+    } finally {
+      setUploadProgress(null);
+    }
   };
 
   const handleClearPhotos = () => {
@@ -578,7 +580,6 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
       const loaded = await loadContentFromGoogleDrive(
         driveUrlInput,
         sheetsUrlInput,
-        spotifyUrlInput,
         previewDrivePhotos
       );
       const trimmedMom = customMomName.trim();
@@ -836,37 +837,18 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
           </div>
 
           <form onSubmit={handleOpenLobby} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Mom's Name */}
-              <div className="space-y-1.5">
-                <label className="block text-sm font-extrabold text-slate-800">
-                  {t('momNameLabel')}
-                </label>
-                <input
-                  type="text"
-                  value={customMomName}
-                  onChange={(e) => setCustomMomName(e.target.value)}
-                  placeholder={DEFAULT_GAME_CONTENT.momName[lang]}
-                  className="w-full rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-base bg-white outline-none transition-all"
-                />
-              </div>
-
-              {/* Spotify Playlist */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-sm font-extrabold text-slate-800">
-                  <Music className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  <span>{t('spotifyUrlLabel')}</span>
-                </label>
-                <input
-                  type="url"
-                  dir="ltr"
-                  value={spotifyUrlInput}
-                  onChange={(e) => setSpotifyUrlInput(e.target.value)}
-                  placeholder={t('spotifyUrlPlaceholder')}
-                  className="w-full rounded-2xl border-2 border-emerald-200 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 px-4 py-3 text-base bg-white outline-none transition-all"
-                />
-                <p className="text-xs text-slate-500">{t('spotifyUrlHint')}</p>
-              </div>
+            {/* Mom's Name */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-extrabold text-slate-800">
+                {t('momNameLabel')}
+              </label>
+              <input
+                type="text"
+                value={customMomName}
+                onChange={(e) => setCustomMomName(e.target.value)}
+                placeholder={DEFAULT_GAME_CONTENT.momName[lang]}
+                className="w-full rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 px-4 py-3 text-base bg-white outline-none transition-all"
+              />
             </div>
 
             {/* Google Drive Folder or Photo Links */}
@@ -888,11 +870,16 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                   />
                   <button
                     type="button"
+                    disabled={uploadProgress !== null}
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-900 font-extrabold text-xs sm:text-sm transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 disabled:opacity-60 border border-purple-300 text-purple-900 font-extrabold text-xs sm:text-sm transition-colors"
                   >
                     <Upload className="w-4 h-4 text-purple-600" aria-hidden="true" />
-                    <span>{t('uploadLocalPhotosBtn')}</span>
+                    <span>
+                      {uploadProgress
+                        ? `${t('loading')} (${uploadProgress.done}/${uploadProgress.total})`
+                        : t('uploadLocalPhotosBtn')}
+                    </span>
                   </button>
 
                   <button
@@ -1781,14 +1768,6 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
         </div>
       )}
 
-      {/* SPOTIFY EMBED PLAYER (keeps playing across LOBBY -> FINALE) */}
-      {gameState.phase !== 'SETUP' && (
-        <SpotifyPlayer
-          spotifyUrl={gameState.content.spotifyUrl}
-          defaultExpanded={gameState.phase === 'LOBBY'}
-        />
-      )}
-
       {/* DRIVE & SHEETS GUIDE MODAL */}
       {showGuideModal && (
         <div
@@ -1819,13 +1798,9 @@ export const HostDashboard: React.FC<HostDashboardProps> = ({
                 <p className="font-black text-emerald-950">{t('guideStep2Title')}</p>
                 <p className="text-sm text-emerald-900">{t('guideStep2Desc')}</p>
               </div>
-              <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-1">
-                <p className="font-black text-amber-950">{t('guideStep3Title')}</p>
-                <p className="text-sm text-amber-900">{t('guideStep3Desc')}</p>
-              </div>
               <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 space-y-1">
-                <p className="font-black text-rose-950">{t('guideStep4Title')}</p>
-                <p className="text-sm text-rose-900">{t('guideStep4Desc')}</p>
+                <p className="font-black text-rose-950">{t('guideStep3Title')}</p>
+                <p className="text-sm text-rose-900">{t('guideStep3Desc')}</p>
               </div>
             </div>
 

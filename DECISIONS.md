@@ -203,7 +203,41 @@
 - **עריכת ברכה לאחר שליחה (`WishesMosaic.tsx`):** הוספת כפתור עריכה/עדכון לברכה בהתאם ל-`REQ-WISH-001`.
 - **שיפור בידוד `sessionStorage` (`PlayerClient.tsx`):** הפרדה בין Split Demo למשחק חי ועדיפות לקוד חדר חדש מ-QR/URL.
 - **נגישות ו-Dark Mode (`SettingsModal.tsx`, `index.css`):** התאמת סימני גודל פונט לכל 3 השפות (`א / А / A`) ותיקון ניגודיות לכל התגים במצב לילה.
-- **הרחבת חבילת הבדיקות (`tests/run-tests.mjs`):** נוספו בדיקות E2E ל-`HostP2PManager` מול `PlayerP2PClient`, רינדור `QRCodeSVG` ו-`MomCelebrationIcon`, ופענוח Google Drive / Sheets / Spotify.
+- **הרחבת חבילת הבדיקות (`tests/run-tests.mjs`):** נוספו בדיקות E2E ל-`HostP2PManager` מול `PlayerP2PClient`, רינדור `QRCodeSVG` ו-`MomCelebrationIcon`, ופענוח Google Drive / Sheets.
+
+#### 5. ביטול התמיכה ב-Spotify (25/11/2026):
+- בהתאם להחלטת המשתמש, הוסרה לחלוטין התמיכה ב-Spotify Embed:
+  - נמחק הקומפוננט `src/components/common/SpotifyPlayer.tsx`.
+  - הוסרו שדה הקישור והנגן מ-`HostDashboard.tsx`, שדה `spotifyUrl` מ-`GameContent`, הפונקציה `normalizeSpotifyEmbedUrl` מ-`contentService.ts`, ומפתחות התרגום של Spotify מ-`translations.ts` (בכל 3 השפות).
+  - עודכנו `REQUIREMENTS.md`, `TEST_PLAN.md`, `README.md` ו-`tests/run-tests.mjs`.
+  - אפקטי האודיו המובנים (Web Audio SFX + Mute) ממשיכים לפעול כרגיל ללא תלות חיצונית.
+
+#### 6. הרחבת פסיפס הברכות: עד 5 ברכות לשחקן + צירוף סלפי חי (25/11/2026):
+- **עד 5 ברכות למשתתף (`src/services/gameLogic.ts`, `HostDashboard.tsx`, `PlayerClient.tsx`):**
+  - הוגדרה פונקציית `addPlayerWish` המאפשרת לכל שחקן לשלוח עד **5 ברכות** נפרדות (עם מונה `X/5`) ולערוך כל אחת מהן גם לאחר שהמכסה התמלאה.
+  - ניקוד הוגן: +100 נק' לברכה ראשונה ו-+25 נק' לכל ברכה נוספת עד 5.
+- **סלפי חי מהאירוע בפרטיות מלאה (`WishesMosaic.tsx`):**
+  - נוספו כפתורי **"צלם סלפי"** (מצלמה קדמית `capture="user"`) ו**"בחר תמונה"** מהגלריה עם תצוגה מקדימה ואפשרות הסרה.
+  - התמונה עוברת חיתוך ריבועי ודחיסה מקומית ב-`<canvas>` בדפדפן (`220x220` JPEG, ללא שמירה בענן) ומועברת ישירות ב-WebRTC P2P אל פסיפס ה-70, באנר ה-Spotlight וענן הברכות במסך הטלוויזיה.
+- **בדיקות אוטומטיות:** נוספה Suite 06 (`TC-WISH-01..03`) — **21 מתוך 21 בדיקות עברו בהצלחה**.
+
+#### 7. תיקון קריסה בהעלאת תמונות ותמיכה חלקה ב-10–12 תמונות למשחק הזיכרון (25/11/2026):
+- **שורש התקלה:**
+  1. `handleLocalFilesUpload` קרא קבצים גולמיים מהטלפון (`4-10MB` לתמונה) ל-Base64 במקביל (`Promise.all`) ללא דחיסה, ושכפל כל תמונה 3 פעמים (`imageA`, `imageB`, `puzzles`), מה שיצר `GameState` של ~100MB שפוצץ את הזיכרון ואת ערוץ ה-WebRTC כבר ב-4 תמונות.
+  2. `buildMemoryPairsFromDrivePhotos` היה מוגבל ל-8 תמונות בלבד.
+- **הפתרונות שיושמו:**
+  1. **דחיסה מקומית סדרתית ([imageService.ts](src/services/imageService.ts)):** כל תמונה נדחסת ב-`<canvas>` בזו אחר זו (מקסימום `640px`, JPEG ~20-35KB — הקטנה של פי 250–400!) עם חיווי התקדמות (`done/total`) ושחרור זיכרון מיידי.
+  2. **העלאת מכסת משחק הזיכרון ל-12 זוגות (`contentService.ts` + `MemoryGame.tsx`):** תמיכה מלאה ב-10–12 תמונות (20–24 קלפים) עם פריסת Grid רספונסיבית (`grid-cols-4 sm:grid-cols-5`).
+  3. **מניעת כפילויות (Deduplication), עדכוני Delta ו-WebRTC Chunking (`p2pService.ts`):**
+     - `packGameStateForWire` שולח כל תמונה פעם אחת בלבד ב-`mediaTable` (הקטנה נוספת פי 3).
+     - עדכוני ניקוד והתקדמות שוטפים משמיטים את `content` (`<2KB` לעדכון) ונשענים על Cache בצד השחקן.
+     - הודעות WebRTC מעל `32KB` מפוצלות אוטומטית לחבילות (`ChunkReassembler`) להעברה אמינה בין כל הטלפונים והטלוויזיה.
+  4. **בדיקות רגרסיה ועומס (`tests/run-tests.mjs`):** נוספה Suite 07 (`TC-MEDIA-01..04`) — **25 מתוך 25 בדיקות עברו בהצלחה**.
+
+#### 8. דרישת ניהול והצגת מספר גרסה בפורמט `XXX.YYY.ZZZ` (26/11/2026):
+- **דרישה מחייבת (`REQ-GEN-010`):** בכל עדכון של האפליקציה חובה לקדם את מספר הגרסה בקובץ `src/constants/version.ts` בפורמט קבוע `XXX.YYY.ZZZ` (`^\d{3}\.\d{3}\.\d{3}$`).
+- **תצוגה בראש העמוד:** מספר הגרסה (`v001.001.000`) מוצג בבירור בסרגל העליון (`AccessibilityBar.tsx`, כיוון `LTR`, פונט מונוספייס) בכל מסכי האפליקציה (דף נחיתה, מארח, שחקן ומסך מפוצל).
+- **אימות אוטומטי:** נוספו בדיקות `TC-VER-01` ו-`TC-VER-02` ב-`tests/run-tests.mjs` המאמתות את הפורמט ואת רינדור תג הגרסה בראש הדף (**27 / 27 בדיקות עברו**).
 
 
 

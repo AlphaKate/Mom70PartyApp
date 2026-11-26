@@ -16,7 +16,7 @@ import {
 import { useSettings } from '../../context/SettingsContext';
 import { soundEffects } from '../../services/contentService';
 import { PlayerConnectionStatus, PlayerP2PClient } from '../../services/p2pService';
-import { GameState, Player } from '../../types/game';
+import { GameState, Player, WishItem } from '../../types/game';
 import { AccessibilityBar } from '../common/AccessibilityBar';
 import { AvatarDisplay } from '../common/AvatarDisplay';
 import {
@@ -31,8 +31,9 @@ import {
   PuzzleGame,
   QuotesGame,
   TriviaGame,
+  WishSubmissionPayload,
 } from '../games';
-import { MAX_PLAYER_NAME_LENGTH, validatePlayerName } from '../../services/gameLogic';
+import { addPlayerWish, MAX_PLAYER_NAME_LENGTH, validatePlayerName } from '../../services/gameLogic';
 
 function getSessionStorageKey(compact: boolean): string {
   return compact ? 'mom70_player_session_demo' : 'mom70_player_session';
@@ -121,7 +122,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [connStatus, setConnStatus] = useState<PlayerConnectionStatus>('connecting');
   const [localAnswers, setLocalAnswers] = useState<Record<string, number>>({});
-  const [localWish, setLocalWish] = useState<string | undefined>(undefined);
+  const [localWishes, setLocalWishes] = useState<WishItem[]>([]);
 
   const clientRef = useRef<PlayerP2PClient | null>(null);
   const joinedIdentityRef = useRef<{ id: string; name: string; avatar: string }>({
@@ -307,22 +308,41 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
   );
 
   const handleSubmitWish = useCallback(
-    (text: string) => {
-      const cleaned = text.trim();
+    (submission: WishSubmissionPayload) => {
+      const cleaned = submission.text.trim();
       if (!cleaned) return;
-      setLocalWish(cleaned);
+      const wishPayload: WishItem = {
+        id:
+          submission.id ||
+          `${playerId}-w-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+        playerId,
+        playerName: joinedIdentityRef.current.name,
+        avatar: joinedIdentityRef.current.avatar,
+        text: cleaned,
+        selfieDataUrl: submission.selfieDataUrl,
+        createdAt: Date.now(),
+      };
+      setLocalWishes((prev) => addPlayerWish(prev, wishPayload).wishes);
       clientRef.current?.send({
         type: 'PLAYER_WISH',
-        payload: {
-          playerId,
-          playerName: joinedIdentityRef.current.name,
-          avatar: joinedIdentityRef.current.avatar,
-          text: cleaned,
-        },
+        payload: wishPayload,
       });
     },
     [playerId]
   );
+
+  const mySubmittedWishes = useMemo<WishItem[]>(() => {
+    const hostWishes = (gameState?.wishes ?? []).filter((w) => w.playerId === playerId);
+    if (hostWishes.length === 0) return localWishes;
+    // Merge any optimistic local wishes that have not yet echoed back from Host
+    const merged = [...hostWishes];
+    for (const lw of localWishes) {
+      if (lw.id && !merged.some((hw) => hw.id === lw.id)) {
+        merged.push(lw);
+      }
+    }
+    return merged;
+  }, [gameState?.wishes, localWishes, playerId]);
 
   const playersList = useMemo<Player[]>(
     () => (gameState ? Object.values(gameState.players) : []),
@@ -773,7 +793,7 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
           )}
           <PlayerWishInput
             onSubmitWish={handleSubmitWish}
-            submittedWish={myPlayer?.wish ?? localWish}
+            submittedWishes={mySubmittedWishes}
           />
         </div>
       )}
@@ -815,9 +835,23 @@ export const PlayerClient: React.FC<PlayerClientProps> = ({
             </div>
           </div>
 
-          {(myPlayer?.wish || localWish) && (
-            <div className="rounded-2xl bg-rose-50/70 border border-rose-200 p-4 text-sm text-slate-800 font-bold">
-              “{myPlayer?.wish || localWish}”
+          {mySubmittedWishes.length > 0 && (
+            <div className="space-y-2 text-start">
+              {mySubmittedWishes.map((w, idx) => (
+                <div
+                  key={w.id ?? idx}
+                  className="flex items-center gap-3 rounded-2xl bg-rose-50/70 border border-rose-200 p-3 text-sm text-slate-800 font-bold"
+                >
+                  {w.selfieDataUrl && (
+                    <img
+                      src={w.selfieDataUrl}
+                      alt=""
+                      className="w-11 h-11 rounded-xl object-cover border-2 border-amber-300 shrink-0"
+                    />
+                  )}
+                  <span className="break-words">“{w.text}”</span>
+                </div>
+              ))}
             </div>
           )}
 

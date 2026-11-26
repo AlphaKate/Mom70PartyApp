@@ -57,7 +57,6 @@ export interface GameContent {
   momName: Record<Language, string>;
   driveFolderUrl: string;
   sheetsUrl?: string;
-  spotifyUrl: string;
   memoryPairs: MemoryPair[];
   puzzles: PuzzleItem[];
   triviaQuestions: TriviaQuestion[];
@@ -65,10 +64,13 @@ export interface GameContent {
 }
 
 export interface WishItem {
+  id?: string;
   playerId: string;
   playerName: string;
   avatar: string;
   text: string;
+  selfieDataUrl?: string;
+  createdAt?: number;
 }
 
 export interface GameState {

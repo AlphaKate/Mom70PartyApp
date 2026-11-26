@@ -42,6 +42,8 @@ try {
   const {
     STAGE_SEQUENCE,
     MAX_PLAYER_NAME_LENGTH,
+    MAX_WISHES_PER_PLAYER,
+    MAX_SELFIE_DATA_URL_LENGTH,
     generateRoomCode,
     normalizeRoomCode,
     validatePlayerName,
@@ -52,10 +54,12 @@ try {
     getArrivalMedalBonus,
     sortRacePlayers,
     sortLeaderboard,
+    sanitizeSelfieDataUrl,
+    addPlayerWish,
   } = await vite.ssrLoadModule('./src/services/gameLogic.ts');
   const {
     DEFAULT_GAME_CONTENT,
-    normalizeSpotifyEmbedUrl,
+    MAX_MEMORY_PHOTO_PAIRS,
     extractGoogleSheetId,
     extractDriveFileId,
     extractDriveFolderId,
@@ -65,9 +69,19 @@ try {
     buildMemoryPairsFromDrivePhotos,
     buildPuzzlesFromDrivePhotos,
   } = await vite.ssrLoadModule('./src/services/contentService.ts');
-  const { HostP2PManager, PlayerP2PClient } = await vite.ssrLoadModule('./src/services/p2pService.ts');
+  const {
+    HostP2PManager,
+    PlayerP2PClient,
+    packGameStateForWire,
+    unpackGameStateFromWire,
+    splitIntoChunks,
+    ChunkReassembler,
+  } = await vite.ssrLoadModule('./src/services/p2pService.ts');
   const { QRCodeSVG } = await vite.ssrLoadModule('./src/vendor/qrcode-react.tsx');
   const { MomCelebrationIcon } = await vite.ssrLoadModule('./src/components/common/MomCelebrationIcon.tsx');
+  const { APP_VERSION, APP_VERSION_REGEX, isValidAppVersion } = await vite.ssrLoadModule('./src/constants/version.ts');
+  const { SettingsProvider } = await vite.ssrLoadModule('./src/context/SettingsContext.tsx');
+  const { AccessibilityBar } = await vite.ssrLoadModule('./src/components/common/AccessibilityBar.tsx');
 
   // =========================================================================
   console.log('--- Suite 01: Internationalization & Branding (REQ-GEN-001, 002, 009) ---');
@@ -114,6 +128,29 @@ try {
     assert.ok(html.startsWith('<svg'), 'Must render an inline <svg>');
     assert.ok(!html.includes('<img'), 'Must NOT contain external <img> tags');
     assert.ok(html.includes('70'), 'Must contain celebratory 70');
+  });
+
+  await runTest('TC-VER-01: APP_VERSION strictly matches XXX.YYY.ZZZ format (REQ-GEN-010)', () => {
+    assert.match(APP_VERSION, APP_VERSION_REGEX, `APP_VERSION "${APP_VERSION}" must match XXX.YYY.ZZZ`);
+    assert.equal(isValidAppVersion('001.001.000'), true);
+    assert.equal(isValidAppVersion('999.012.005'), true);
+    assert.equal(isValidAppVersion('1.0.0'), false);
+    assert.equal(isValidAppVersion('001.01.000'), false);
+    assert.equal(isValidAppVersion('001.001'), false);
+    assert.equal(isValidAppVersion('abc.def.ghi'), false);
+  });
+
+  await runTest('TC-VER-02: Top header bar (AccessibilityBar) renders vXXX.YYY.ZZZ visibly in LTR', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(
+        SettingsProvider,
+        { applyToDocument: false },
+        React.createElement(AccessibilityBar)
+      )
+    );
+    assert.ok(html.includes(`v${APP_VERSION}`), `Top header must render v${APP_VERSION}`);
+    assert.ok(html.includes('data-testid="app-version"'), 'Version badge must include data-testid');
+    assert.ok(html.includes('dir="ltr"'), 'Version badge must preserve LTR order');
   });
 
   // =========================================================================
@@ -216,7 +253,7 @@ try {
   });
 
   // =========================================================================
-  console.log('\n--- Suite 04: Content, Drive, Sheets & Spotify Services (REQ-HOST-003..005, REQ-GEN-008) ---');
+  console.log('\n--- Suite 04: Content, Google Drive & Google Sheets Services (REQ-HOST-003..005) ---');
 
   await runTest('TC-CONT-01: Default game content has 6+ memory pairs, puzzles, trivia & quotes in 3 languages', () => {
     assert.ok(DEFAULT_GAME_CONTENT.memoryPairs.length >= 6);
@@ -279,14 +316,10 @@ try {
     assert.equal(puzzles[0].gridSize, 3);
   });
 
-  await runTest('TC-CONT-03: Google Sheets ID extractor & Spotify embed normalizer', () => {
+  await runTest('TC-CONT-03: Google Sheets ID extractor parses Sheet ID and GID cleanly', () => {
     const sheet = extractGoogleSheetId('https://docs.google.com/spreadsheets/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/edit#gid=42');
     assert.deepEqual(sheet, { sheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz', gid: '42' });
-
-    const embed = normalizeSpotifyEmbedUrl('https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC?si=123');
-    assert.ok(embed.startsWith('https://open.spotify.com/embed/playlist/37i9dQZF1DXdPec7aLTmlC'));
-    const fallbackEmbed = normalizeSpotifyEmbedUrl('');
-    assert.ok(fallbackEmbed.includes('open.spotify.com/embed/playlist/'));
+    assert.equal(extractGoogleSheetId(''), null);
   });
 
   // =========================================================================
@@ -372,15 +405,252 @@ try {
       });
       player.send({
         type: 'PLAYER_WISH',
-        payload: { playerId: 'player-test-1', playerName: 'Katy', avatar: 'fairy_nap', text: 'מזל טוב אמא! ❤️' },
+        payload: {
+          id: 'w-selfie-1',
+          playerId: 'player-test-1',
+          playerName: 'Katy',
+          avatar: 'fairy_nap',
+          text: 'מזל טוב אמא! ❤️',
+          selfieDataUrl: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        },
       });
       await new Promise((r) => setTimeout(r, 20));
 
       assert.ok(hostReceived.some((m) => m.type === 'PLAYER_PROGRESS' && m.payload.completed === true));
       assert.ok(hostReceived.some((m) => m.type === 'PLAYER_ANSWER' && m.payload.answerIndex === 1));
-      assert.ok(hostReceived.some((m) => m.type === 'PLAYER_WISH' && m.payload.text.includes('מזל טוב')));
+      assert.ok(
+        hostReceived.some(
+          (m) =>
+            m.type === 'PLAYER_WISH' &&
+            m.payload.text.includes('מזל טוב') &&
+            m.payload.selfieDataUrl?.startsWith('data:image/jpeg;base64,')
+        )
+      );
     } finally {
       player.destroy();
+      host.destroy();
+    }
+  });
+
+  // =========================================================================
+  console.log('\n--- Suite 06: Multi-Wish (Up to 5) & Live Selfie Support (REQ-WISH-001..003) ---');
+
+  await runTest('TC-WISH-01: Player can submit up to 5 distinct wishes and 6th is cleanly blocked', () => {
+    assert.equal(MAX_WISHES_PER_PLAYER, 5);
+    let wishes = [];
+
+    for (let i = 1; i <= 5; i++) {
+      const res = addPlayerWish(wishes, {
+        id: `p1-w-${i}`,
+        playerId: 'p1',
+        playerName: 'Katy',
+        avatar: 'fairy_nap',
+        text: `ברכה מספר ${i}`,
+        selfieDataUrl: i % 2 === 1 ? 'data:image/jpeg;base64,/9j/4AAQSkZJRg==' : undefined,
+      });
+      assert.equal(res.added, true, `Wish #${i} must be accepted`);
+      assert.equal(res.countForPlayer, i);
+      wishes = res.wishes;
+    }
+
+    assert.equal(wishes.length, 5);
+    assert.equal(wishes.filter((w) => w.selfieDataUrl).length, 3);
+
+    // 6th wish from same player must be blocked
+    const sixth = addPlayerWish(wishes, {
+      id: 'p1-w-6',
+      playerId: 'p1',
+      playerName: 'Katy',
+      avatar: 'fairy_nap',
+      text: 'ברכה שישית',
+    });
+    assert.equal(sixth.added, false, '6th wish for the same player must be rejected');
+    assert.equal(sixth.wishes.length, 5);
+
+    // Another player can still add wishes independently
+    const otherPlayer = addPlayerWish(wishes, {
+      id: 'p2-w-1',
+      playerId: 'p2',
+      playerName: 'Dan',
+      avatar: 'hero_hug',
+      text: 'מזל טוב!',
+    });
+    assert.equal(otherPlayer.added, true);
+    assert.equal(otherPlayer.wishes.length, 6);
+  });
+
+  await runTest('TC-WISH-02: Player can edit an existing wish (text & selfie) even at 5/5 quota', () => {
+    let wishes = [];
+    for (let i = 1; i <= 5; i++) {
+      wishes = addPlayerWish(wishes, {
+        id: `p1-w-${i}`,
+        playerId: 'p1',
+        playerName: 'Katy',
+        avatar: 'fairy_nap',
+        text: `Wish ${i}`,
+      }).wishes;
+    }
+
+    const edited = addPlayerWish(wishes, {
+      id: 'p1-w-3',
+      playerId: 'p1',
+      playerName: 'Katy',
+      avatar: 'fairy_nap',
+      text: 'Updated Wish 3 ❤️',
+      selfieDataUrl: 'data:image/jpeg;base64,UPDATED',
+    });
+
+    assert.equal(edited.updated, true);
+    assert.equal(edited.added, false);
+    assert.equal(edited.wishes.length, 5);
+    const updatedItem = edited.wishes.find((w) => w.id === 'p1-w-3');
+    assert.equal(updatedItem?.text, 'Updated Wish 3 ❤️');
+    assert.equal(updatedItem?.selfieDataUrl, 'data:image/jpeg;base64,UPDATED');
+  });
+
+  await runTest('TC-WISH-03: sanitizeSelfieDataUrl validates data:image/ prefix and P2P size cap', () => {
+    assert.equal(
+      sanitizeSelfieDataUrl('data:image/jpeg;base64,abc123'),
+      'data:image/jpeg;base64,abc123'
+    );
+    assert.equal(sanitizeSelfieDataUrl('https://evil.example/img.jpg'), undefined);
+    assert.equal(sanitizeSelfieDataUrl('javascript:alert(1)'), undefined);
+    const oversized = `data:image/jpeg;base64,${'A'.repeat(MAX_SELFIE_DATA_URL_LENGTH + 10)}`;
+    assert.equal(sanitizeSelfieDataUrl(oversized), undefined);
+  });
+
+  // =========================================================================
+  console.log('\n--- Suite 07: Large Multi-Photo Memory Game (10–12 Photos), Wire Dedup & WebRTC Chunking ---');
+
+  await runTest('TC-MEDIA-01: Memory Game supports 10–12 uploaded photos without truncation at 8', () => {
+    assert.equal(MAX_MEMORY_PHOTO_PAIRS, 12);
+    const tenPhotos = Array.from({ length: 10 }, (_, i) => `data:image/jpeg;base64,PHOTO_${i}_${'X'.repeat(100)}`);
+    const pairs10 = buildMemoryPairsFromDrivePhotos(tenPhotos);
+    assert.equal(pairs10.length, 10, 'All 10 photos must become 10 memory pairs (20 cards)');
+
+    const fourteenPhotos = Array.from({ length: 14 }, (_, i) => `data:image/jpeg;base64,PHOTO_${i}`);
+    const pairsCapped = buildMemoryPairsFromDrivePhotos(fourteenPhotos);
+    assert.equal(pairsCapped.length, 12, 'Must cleanly cap at 12 pairs (24 cards)');
+  });
+
+  await runTest('TC-MEDIA-02: Wire packing deduplicates 10 photos (3x reduction) and delta omits content (<2KB)', () => {
+    const tenPhotos = Array.from(
+      { length: 10 },
+      (_, i) => `data:image/jpeg;base64,${String(i).padStart(2, '0')}${'A'.repeat(24000)}`
+    );
+    const content = {
+      ...DEFAULT_GAME_CONTENT,
+      memoryPairs: buildMemoryPairsFromDrivePhotos(tenPhotos),
+      puzzles: buildPuzzlesFromDrivePhotos(tenPhotos),
+    };
+    const state = {
+      roomCode: '70M1',
+      phase: 'MEMORY',
+      isPaused: false,
+      currentQuestionIndex: 0,
+      revealAnswer: false,
+      roundStartTime: Date.now(),
+      players: {},
+      wishes: [],
+      content,
+    };
+
+    const rawSize = JSON.stringify(state).length;
+    const packedFull = packGameStateForWire(state, 1, false);
+    const packedFullSize = JSON.stringify(packedFull).length;
+    assert.equal(packedFull.mediaTable?.length, 10, '10 photos must be stored only ONCE in mediaTable');
+    assert.ok(
+      packedFullSize < rawSize * 0.45,
+      `Expected >2x dedup reduction (raw=${rawSize}, packed=${packedFullSize})`
+    );
+
+    const unpackedFull = unpackGameStateFromWire(packedFull, null, -1);
+    assert.equal(unpackedFull.needsFullSync, false);
+    assert.equal(unpackedFull.state?.content.memoryPairs[9].imageA, tenPhotos[9]);
+    assert.equal(unpackedFull.state?.content.puzzles[9].imageUrl, tenPhotos[9]);
+
+    const packedLite = packGameStateForWire(state, 1, true);
+    const liteSize = JSON.stringify(packedLite).length;
+    assert.ok(liteSize < 2000, `Expected lightweight delta <2KB, got ${liteSize} bytes`);
+
+    const unpackedLite = unpackGameStateFromWire(packedLite, unpackedFull.state.content, 1);
+    assert.equal(unpackedLite.needsFullSync, false);
+    assert.equal(unpackedLite.state?.content.memoryPairs.length, 10);
+
+    // Unseen version triggers full sync request
+    const missedSync = unpackGameStateFromWire(packedLite, null, -1);
+    assert.equal(missedSync.needsFullSync, true);
+  });
+
+  await runTest('TC-MEDIA-03: WebRTC chunking splits & reassembles 300KB+ 10-photo payload cleanly', () => {
+    const bigPayload = {
+      __mom70: true,
+      msgId: 'chunk-test',
+      sender: 'host',
+      data: 'Z'.repeat(300000),
+    };
+    const chunks = splitIntoChunks(bigPayload, 32768);
+    assert.ok(chunks && chunks.length >= 10, '300KB payload must split into >=10 chunks of 32KB');
+
+    const reassembler = new ChunkReassembler();
+    let result = null;
+    for (const chunk of chunks) {
+      result = reassembler.push(chunk);
+    }
+    assert.deepEqual(result, bigPayload);
+  });
+
+  await runTest('TC-MEDIA-04: HostP2PManager <-> PlayerP2PClient syncs 10-photo state + late joiner recovery', async () => {
+    const tenPhotos = Array.from(
+      { length: 10 },
+      (_, i) => `data:image/jpeg;base64,${String(i).padStart(2, '0')}${'B'.repeat(20000)}`
+    );
+    const content = {
+      ...DEFAULT_GAME_CONTENT,
+      memoryPairs: buildMemoryPairsFromDrivePhotos(tenPhotos),
+      puzzles: buildPuzzlesFromDrivePhotos(tenPhotos),
+    };
+
+    const host = new HostP2PManager('70M2', () => {});
+    const p1States = [];
+    const p2States = [];
+    const p1 = new PlayerP2PClient('70M2', 'p1', (s) => p1States.push(s));
+
+    try {
+      const baseState = {
+        roomCode: '70M2',
+        phase: 'MEMORY',
+        isPaused: false,
+        currentQuestionIndex: 0,
+        revealAnswer: false,
+        roundStartTime: Date.now(),
+        players: {},
+        wishes: [],
+        content,
+      };
+
+      // Broadcast 1: full content (10 photos)
+      host.broadcast(baseState);
+      // Broadcast 2: lightweight delta (progress update, same content ref)
+      host.broadcast({ ...baseState, isPaused: true });
+      await new Promise((r) => setTimeout(r, 25));
+
+      assert.ok(p1States.length >= 2);
+      assert.equal(p1States[p1States.length - 1].isPaused, true);
+      assert.equal(p1States[p1States.length - 1].content.memoryPairs.length, 10);
+      assert.equal(p1States[p1States.length - 1].content.memoryPairs[9].imageB, tenPhotos[9]);
+
+      // Late joiner p2 connects AFTER full broadcast and receives full content automatically via PING
+      const p2 = new PlayerP2PClient('70M2', 'p2', (s) => p2States.push(s));
+      try {
+        await new Promise((r) => setTimeout(r, 30));
+        assert.ok(p2States.length >= 1, 'Late joiner must receive full 10-photo state via PING');
+        assert.equal(p2States[p2States.length - 1].content.memoryPairs.length, 10);
+      } finally {
+        p2.destroy();
+      }
+    } finally {
+      p1.destroy();
       host.destroy();
     }
   });

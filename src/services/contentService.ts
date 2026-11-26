@@ -5,10 +5,6 @@ import {
   TriviaQuestion,
 } from '../types/game';
 
-const DEFAULT_SPOTIFY_ID = '37i9dQZF1DXdPec7aLTmlC';
-const DEFAULT_SPOTIFY_URL = `https://open.spotify.com/playlist/${DEFAULT_SPOTIFY_ID}`;
-const DEFAULT_SPOTIFY_EMBED = `https://open.spotify.com/embed/playlist/${DEFAULT_SPOTIFY_ID}?utm_source=generator`;
-
 function svgToDataUri(svgContent: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent.trim())}`;
 }
@@ -287,7 +283,6 @@ export const DEFAULT_GAME_CONTENT: GameContent = {
   },
   driveFolderUrl: '',
   sheetsUrl: '',
-  spotifyUrl: DEFAULT_SPOTIFY_URL,
   memoryPairs: [
     {
       id: 'pair-1',
@@ -590,50 +585,6 @@ export const DEFAULT_GAME_CONTENT: GameContent = {
   ],
 };
 
-export function normalizeSpotifyEmbedUrl(url?: string): string {
-  const trimmed = (url ?? '').trim();
-  if (!trimmed) {
-    return DEFAULT_SPOTIFY_EMBED;
-  }
-
-  // Handle spotify:playlist:ID or spotify:album:ID URI format
-  const uriMatch = trimmed.match(/^spotify:(playlist|album|track|artist|show|episode):([a-zA-Z0-9]+)$/i);
-  if (uriMatch) {
-    const [, kind, id] = uriMatch;
-    return `https://open.spotify.com/embed/${kind.toLowerCase()}/${id}?utm_source=generator`;
-  }
-
-  try {
-    const parsed = new URL(trimmed);
-    if (!parsed.hostname.includes('spotify.com')) {
-      return DEFAULT_SPOTIFY_EMBED;
-    }
-
-    // Strip locale segments like /intl-he/ or /intl-en/ and optional /embed/
-    const parts = parsed.pathname
-      .split('/')
-      .filter(Boolean)
-      .filter((part) => !part.startsWith('intl-'));
-
-    if (parts[0] === 'embed') {
-      parts.shift();
-    }
-
-    if (parts.length >= 2) {
-      const kind = parts[0].toLowerCase();
-      const id = parts[1];
-      const allowedKinds = new Set(['playlist', 'album', 'track', 'artist', 'show', 'episode']);
-      if (allowedKinds.has(kind) && id) {
-        return `https://open.spotify.com/embed/${kind}/${id}?utm_source=generator`;
-      }
-    }
-  } catch {
-    return DEFAULT_SPOTIFY_EMBED;
-  }
-
-  return DEFAULT_SPOTIFY_EMBED;
-}
-
 export function extractGoogleSheetId(url: string): { sheetId: string; gid?: string } | null {
   const trimmed = url.trim();
   if (!trimmed) return null;
@@ -910,8 +861,12 @@ export async function discoverDriveFolderImages(folderId: string): Promise<strin
   return [];
 }
 
+export const MAX_MEMORY_PHOTO_PAIRS = 12;
+
 export function buildMemoryPairsFromDrivePhotos(imageUrls: string[]): MemoryPair[] {
-  const uniqueUrls = Array.from(new Set(imageUrls.map((u) => u.trim()).filter(Boolean))).slice(0, 8);
+  const uniqueUrls = Array.from(
+    new Set(imageUrls.map((u) => u.trim()).filter(Boolean))
+  ).slice(0, MAX_MEMORY_PHOTO_PAIRS);
   if (uniqueUrls.length === 0) return [];
 
   const drivePairs: MemoryPair[] = uniqueUrls.map((photoUrl, idx) => {
@@ -1199,12 +1154,10 @@ export async function resolveDrivePhotos(driveInput: string): Promise<string[]> 
 export async function loadContentFromGoogleDrive(
   driveFolderUrl: string,
   sheetsUrl?: string,
-  spotifyUrl?: string,
   preResolvedPhotos?: string[]
 ): Promise<GameContent> {
   const cleanDriveUrl = driveFolderUrl.trim();
   const cleanSheetsUrl = (sheetsUrl ?? '').trim();
-  const cleanSpotifyUrl = (spotifyUrl ?? '').trim() || DEFAULT_GAME_CONTENT.spotifyUrl;
 
   const drivePhotos =
     preResolvedPhotos && preResolvedPhotos.length > 0
@@ -1217,7 +1170,6 @@ export async function loadContentFromGoogleDrive(
     ...DEFAULT_GAME_CONTENT,
     driveFolderUrl: cleanDriveUrl,
     sheetsUrl: cleanSheetsUrl,
-    spotifyUrl: cleanSpotifyUrl,
     ...(driveMemoryPairs.length > 0 ? { memoryPairs: driveMemoryPairs } : {}),
     ...(drivePuzzles.length > 0 ? { puzzles: drivePuzzles } : {}),
   };

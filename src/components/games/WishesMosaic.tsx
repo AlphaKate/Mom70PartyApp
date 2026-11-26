@@ -1,21 +1,36 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Camera,
   ChevronLeft,
   ChevronRight,
   Edit3,
   Heart,
+  ImagePlus,
   Send,
   Sparkles,
   Star,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { Language, WishItem } from '../../types/game';
 import { useSettings } from '../../context/SettingsContext';
 import { soundEffects } from '../../services/contentService';
+import {
+  MAX_SELFIE_DATA_URL_LENGTH,
+  MAX_WISH_TEXT_LENGTH,
+  MAX_WISHES_PER_PLAYER,
+} from '../../services/gameLogic';
 import { AvatarDisplay } from '../common/AvatarDisplay';
 
+export interface WishSubmissionPayload {
+  id?: string;
+  text: string;
+  selfieDataUrl?: string;
+}
+
 interface PlayerWishInputProps {
-  onSubmitWish: (text: string) => void;
-  submittedWish?: string;
+  onSubmitWish: (payload: WishSubmissionPayload) => void;
+  submittedWishes?: WishItem[];
 }
 
 interface HostMosaic70Props {
@@ -62,156 +77,408 @@ const MOSAIC_COPY: Record<
   he: {
     headerPrefix: 'פסיפס הברכות לכבוד גיל 70 של',
     headerSuffix: '🎂',
-    waitingTitle: 'פסיפס ה-70 מחכה לברכות שלכם!',
-    waitingSubtitle: 'שלחו איחול מהטלפון והוא יופיע כאן מיד ✨',
+    waitingTitle: 'פסיפס ה-70 מחכה לברכות ולסלפי שלכם!',
+    waitingSubtitle: 'שלחו עד 5 ברכות עם סלפי מהטלפון והן יופיעו כאן מיד ✨',
     spotlightLabel: 'ברכה נבחרת',
     allBlessings: 'ענן הברכות המשפחתי',
   },
   ru: {
     headerPrefix: 'Праздничная мозаика 70-летия:',
     headerSuffix: '🎂',
-    waitingTitle: 'Мозаика «70» ждёт ваших пожеланий!',
-    waitingSubtitle: 'Отправьте тёплое поздравление с телефона ✨',
+    waitingTitle: 'Мозаика «70» ждёт ваших пожеланий и селфи!',
+    waitingSubtitle: 'Отправьте до 5 пожеланий с селфи с телефона ✨',
     spotlightLabel: 'В центре внимания',
     allBlessings: 'Семейное облако пожеланий',
   },
   en: {
     headerPrefix: '70th Birthday Wish Mosaic for',
     headerSuffix: '🎂',
-    waitingTitle: 'The 70 Mosaic awaits your blessings!',
-    waitingSubtitle: 'Send a warm wish from your phone to light up the 70 ✨',
+    waitingTitle: 'The 70 Mosaic awaits your wishes & selfies!',
+    waitingSubtitle: 'Send up to 5 wishes with live selfies from your phone ✨',
     spotlightLabel: 'Wish Spotlight',
     allBlessings: 'Family Blessing Cloud',
   },
 };
 
+/**
+ * Compresses & center-crops a selfie photo in the browser (zero cloud upload)
+ * to a lightweight JPEG Data URL suitable for fast WebRTC P2P transmission.
+ */
+async function compressSelfieFile(file: File): Promise<string> {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('Failed to decode image'));
+      image.src = objectUrl;
+    });
+
+    const renderSquare = (size: number, quality: number): string => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 2D context unavailable');
+
+      const minSide = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+      const sx = ((img.naturalWidth || img.width) - minSide) / 2;
+      const sy = ((img.naturalHeight || img.height) - minSide) / 2;
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+      return canvas.toDataURL('image/jpeg', quality);
+    };
+
+    let dataUrl = renderSquare(220, 0.72);
+    if (dataUrl.length > MAX_SELFIE_DATA_URL_LENGTH) {
+      dataUrl = renderSquare(160, 0.58);
+    }
+    if (dataUrl.length > MAX_SELFIE_DATA_URL_LENGTH) {
+      dataUrl = renderSquare(128, 0.45);
+    }
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export const PlayerWishInput: React.FC<PlayerWishInputProps> = ({
   onSubmitWish,
-  submittedWish,
+  submittedWishes = [],
 }) => {
   const { lang, dir, isMuted, t } = useSettings();
   const copy = INPUT_COPY[lang];
-  const [draft, setDraft] = useState('');
-  const [localSubmitted, setLocalSubmitted] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
 
-  const effectiveSubmitted = submittedWish?.trim() || localSubmitted;
+  const [draft, setDraft] = useState('');
+  const [selfieDataUrl, setSelfieDataUrl] = useState<string | undefined>(undefined);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
+  const [editingWishId, setEditingWishId] = useState<string | null>(null);
+  const [justSentBanner, setJustSentBanner] = useState(false);
+
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const sentBannerTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (sentBannerTimerRef.current !== null) {
+        window.clearTimeout(sentBannerTimerRef.current);
+      }
+    };
+  }, []);
+
+  const sentCount = submittedWishes.length;
+  const hasReachedLimit = sentCount >= MAX_WISHES_PER_PLAYER;
+  const isEditing = editingWishId !== null;
+  const showForm = !hasReachedLimit || isEditing;
 
   const handleAppendChip = (chip: string) => {
     setDraft((prev) => {
       const next = prev.trim().length > 0 ? `${prev.trim()} ${chip}` : chip;
-      return next.slice(0, 120);
+      return next.slice(0, MAX_WISH_TEXT_LENGTH);
     });
+  };
+
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setPhotoError(false);
+    setIsProcessingPhoto(true);
+    try {
+      const compressed = await compressSelfieFile(file);
+      setSelfieDataUrl(compressed);
+      soundEffects.playTick(isMuted);
+    } catch {
+      setPhotoError(true);
+    } finally {
+      setIsProcessingPhoto(false);
+    }
+  };
+
+  const handleStartEdit = (wish: WishItem) => {
+    soundEffects.playTick(isMuted);
+    setEditingWishId(wish.id ?? null);
+    setDraft(wish.text);
+    setSelfieDataUrl(wish.selfieDataUrl);
+    setPhotoError(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingWishId(null);
+    setDraft('');
+    setSelfieDataUrl(undefined);
+    setPhotoError(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = draft.trim();
     if (!cleaned) return;
+    if (!isEditing && hasReachedLimit) return;
+
     soundEffects.playSuccess(isMuted);
-    setLocalSubmitted(cleaned);
-    setIsEditing(false);
-    onSubmitWish(cleaned);
+    onSubmitWish({
+      id: editingWishId ?? undefined,
+      text: cleaned,
+      selfieDataUrl,
+    });
+
+    setDraft('');
+    setSelfieDataUrl(undefined);
+    setEditingWishId(null);
+    setPhotoError(false);
+
+    setJustSentBanner(true);
+    if (sentBannerTimerRef.current !== null) {
+      window.clearTimeout(sentBannerTimerRef.current);
+    }
+    sentBannerTimerRef.current = window.setTimeout(() => {
+      setJustSentBanner(false);
+    }, 3000);
   };
 
-  if (effectiveSubmitted && !isEditing) {
-    return (
-      <div
-        dir={dir}
-        className="w-full max-w-lg mx-auto rounded-3xl bg-gradient-to-br from-rose-50 via-amber-50 to-pink-50 border-2 border-amber-300 p-6 sm:p-8 text-center shadow-xl space-y-4"
-      >
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-white flex items-center justify-center mx-auto shadow-lg">
-          <Heart className="w-8 h-8 fill-current animate-pulse" />
-        </div>
-        <h2 className="text-2xl font-black text-rose-800">{t('wishesSubmittedTitle')}</h2>
-        <p className="text-base text-slate-700">{t('wishesSubmittedDesc')}</p>
-
-        <div className="rounded-2xl bg-white border-2 border-rose-200 p-4 shadow-inner">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-rose-500 mb-1">
-            {copy.yourBlessing}
-          </p>
-          <p className="text-xl font-bold text-slate-800 break-words">
-            “{effectiveSubmitted}”
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-          <button
-            type="button"
-            onClick={() => {
-              soundEffects.playTick(isMuted);
-              setDraft(effectiveSubmitted);
-              setIsEditing(true);
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-rose-50 border-2 border-rose-200 text-rose-700 font-bold text-sm shadow-sm transition-colors touch-manipulation"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>{t('editWishBtn')}</span>
-          </button>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 text-amber-600 font-bold text-sm">
-          <Sparkles className="w-4 h-4" />
-          <span>70</span>
-          <Sparkles className="w-4 h-4" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <form
-      dir={dir}
-      onSubmit={handleSubmit}
-      className="w-full max-w-lg mx-auto rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 p-5 sm:p-6 shadow-xl space-y-4"
-    >
-      <div className="text-center space-y-1">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow mb-1">
-          <Heart className="w-6 h-6 fill-current" />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-black text-rose-800">{t('wishesTitle')}</h2>
-        <p className="text-sm sm:text-base text-slate-600">{t('wishesSubtitle')}</p>
-      </div>
+    <div dir={dir} className="w-full max-w-lg mx-auto space-y-4">
+      {/* Quota & Status Header */}
+      {showForm ? (
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-3xl bg-white/95 backdrop-blur border-2 border-rose-200 p-5 sm:p-6 shadow-xl space-y-4"
+        >
+          <div className="text-center space-y-1.5">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow mb-1">
+              <Heart className="w-6 h-6 fill-current" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-rose-800">{t('wishesTitle')}</h2>
+            <p className="text-sm sm:text-base text-slate-600">{t('wishesSubtitle')}</p>
+            <div className="pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-extrabold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>
+                  {t('wishesQuotaBadge', {
+                    count: sentCount,
+                    max: MAX_WISHES_PER_PLAYER,
+                  })}
+                </span>
+              </span>
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value.slice(0, 120))}
-          placeholder={t('wishesPlaceholder')}
-          rows={3}
-          maxLength={120}
-          className="w-full rounded-2xl border-2 border-amber-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 p-4 text-lg font-medium text-slate-800 bg-amber-50/30 outline-none resize-none transition-all"
-        />
-        <div className="flex justify-end text-xs font-bold text-slate-400">
-          {draft.length}/120
-        </div>
-      </div>
+          {justSentBanner && (
+            <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-300 px-4 py-2.5 text-center text-emerald-800 font-bold text-sm flex items-center justify-center gap-2">
+              <Heart className="w-4 h-4 fill-emerald-500 text-emerald-600 shrink-0" />
+              <span>{t('wishesSubmittedTitle')}</span>
+            </div>
+          )}
 
-      <div className="space-y-2">
-        <p className="text-xs font-extrabold text-slate-500">{copy.quickIdeasLabel}</p>
-        <div className="flex flex-wrap gap-2">
-          {copy.quickIdeas.map((idea) => (
+          {/* Wish Text Input */}
+          <div className="space-y-1.5">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, MAX_WISH_TEXT_LENGTH))}
+              placeholder={t('wishesPlaceholder')}
+              rows={3}
+              maxLength={MAX_WISH_TEXT_LENGTH}
+              className="w-full rounded-2xl border-2 border-amber-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 p-4 text-lg font-medium text-slate-800 bg-amber-50/30 outline-none resize-none transition-all"
+            />
+            <div className="flex justify-end text-xs font-bold text-slate-400">
+              {draft.length}/{MAX_WISH_TEXT_LENGTH}
+            </div>
+          </div>
+
+          {/* Quick Ideas */}
+          <div className="space-y-2">
+            <p className="text-xs font-extrabold text-slate-500">{copy.quickIdeasLabel}</p>
+            <div className="flex flex-wrap gap-2">
+              {copy.quickIdeas.map((idea) => (
+                <button
+                  key={idea}
+                  type="button"
+                  onClick={() => handleAppendChip(idea)}
+                  className="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-sm font-bold transition-colors touch-manipulation active:scale-95"
+                >
+                  + {idea}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Live Selfie Attachment (Zero Cloud, Direct P2P) */}
+          <div className="rounded-2xl bg-rose-50/70 border-2 border-dashed border-rose-200 p-3.5 space-y-2.5">
+            <p className="text-xs font-extrabold text-rose-800">{t('selfieOptionalLabel')}</p>
+
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              onChange={handlePhotoSelected}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoSelected}
+              className="hidden"
+            />
+
+            {selfieDataUrl ? (
+              <div className="flex items-center justify-between gap-3 bg-white rounded-2xl p-2.5 border border-rose-200 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={selfieDataUrl}
+                    alt="Selfie preview"
+                    className="w-16 h-16 rounded-xl object-cover border-2 border-amber-300 shadow-sm shrink-0"
+                  />
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-extrabold transition-colors touch-manipulation"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{t('takeSelfieBtn')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelfieDataUrl(undefined)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 text-xs font-extrabold transition-colors touch-manipulation"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{t('removeSelfieBtn')}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={isProcessingPhoto}
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-sm shadow-sm transition-all active:scale-95 touch-manipulation disabled:opacity-50"
+                >
+                  <Camera className="w-4 h-4 shrink-0" />
+                  <span>{isProcessingPhoto ? t('selfieProcessing') : t('takeSelfieBtn')}</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isProcessingPhoto}
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white hover:bg-amber-50 border-2 border-amber-300 text-amber-900 font-extrabold text-sm shadow-sm transition-all active:scale-95 touch-manipulation disabled:opacity-50"
+                >
+                  <ImagePlus className="w-4 h-4 shrink-0" />
+                  <span>{t('pickPhotoBtn')}</span>
+                </button>
+              </div>
+            )}
+
+            {photoError && (
+              <p className="text-xs font-bold text-rose-600">{t('selfieError')}</p>
+            )}
+          </div>
+
+          {/* Submit / Cancel Buttons */}
+          <div className="flex items-center gap-2">
+            {isEditing && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="min-h-[54px] px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-sm flex items-center justify-center gap-1 transition-colors touch-manipulation"
+              >
+                <X className="w-4 h-4" />
+                <span>{t('cancel')}</span>
+              </button>
+            )}
             <button
-              key={idea}
-              type="button"
-              onClick={() => handleAppendChip(idea)}
-              className="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-sm font-bold transition-colors touch-manipulation active:scale-95"
+              type="submit"
+              disabled={draft.trim().length === 0 || isProcessingPhoto}
+              className="flex-1 min-h-[54px] rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 disabled:opacity-45 disabled:cursor-not-allowed text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] touch-manipulation"
             >
-              + {idea}
+              <Send className="w-5 h-5" />
+              <span>
+                {isEditing
+                  ? t('wishesUpdateBtn')
+                  : sentCount > 0
+                  ? t('wishesSendAnotherBtn')
+                  : t('wishesSubmitBtn')}
+              </span>
             </button>
-          ))}
+          </div>
+        </form>
+      ) : (
+        <div className="rounded-3xl bg-gradient-to-br from-rose-50 via-amber-50 to-pink-50 border-2 border-amber-300 p-6 text-center shadow-xl space-y-3">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-white flex items-center justify-center mx-auto shadow-lg">
+            <Heart className="w-8 h-8 fill-current animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-black text-rose-800">{t('wishesMaxReachedTitle')}</h2>
+          <p className="text-sm sm:text-base text-slate-700">{t('wishesMaxReachedDesc')}</p>
+          <div className="flex items-center justify-center gap-2 text-amber-600 font-bold text-sm">
+            <Sparkles className="w-4 h-4" />
+            <span>
+              {sentCount}/{MAX_WISHES_PER_PLAYER} • 70
+            </span>
+            <Sparkles className="w-4 h-4" />
+          </div>
         </div>
-      </div>
+      )}
 
-      <button
-        type="submit"
-        disabled={draft.trim().length === 0}
-        className="w-full min-h-[58px] rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 disabled:opacity-45 disabled:cursor-not-allowed text-white font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] touch-manipulation"
-      >
-        <Send className="w-5 h-5" />
-        <span>{t('wishesSubmitBtn')}</span>
-      </button>
-    </form>
+      {/* Player's Sent Wishes List (up to 5) with Edit Support */}
+      {sentCount > 0 && (
+        <div className="rounded-3xl bg-white/95 backdrop-blur border-2 border-amber-200 p-4 sm:p-5 shadow-lg space-y-3">
+          <h3 className="text-sm font-black text-rose-800 flex items-center gap-1.5">
+            <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+            <span>
+              {t('wishesYourSentList', {
+                count: sentCount,
+                max: MAX_WISHES_PER_PLAYER,
+              })}
+            </span>
+          </h3>
+
+          <div className="space-y-2.5">
+            {submittedWishes.map((wish, idx) => (
+              <div
+                key={wish.id ?? `${wish.playerId}-${idx}`}
+                className="flex items-center justify-between gap-3 rounded-2xl bg-rose-50/70 border border-rose-200 p-3"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {wish.selfieDataUrl ? (
+                    <img
+                      src={wish.selfieDataUrl}
+                      alt=""
+                      className="w-12 h-12 rounded-xl object-cover border-2 border-amber-300 shadow-sm shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 font-black flex items-center justify-center shrink-0">
+                      #{idx + 1}
+                    </div>
+                  )}
+                  <p className="text-sm sm:text-base font-bold text-slate-800 break-words min-w-0">
+                    “{wish.text}”
+                  </p>
+                </div>
+
+                {wish.id && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit(wish)}
+                    aria-label={t('editWishBtn')}
+                    title={t('editWishBtn')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-rose-200 text-rose-700 shrink-0 transition-colors touch-manipulation"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -310,7 +577,6 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
       return assignments;
     }
 
-    // Spread wishes cleanly at evenly spaced indices across the "7" and "0"
     const repeats = wishes.length <= 6 ? 3 : wishes.length <= 14 ? 2 : 1;
     const totalSlotsNeeded = Math.min(totalCells, wishes.length * repeats);
     const step = totalCells / totalSlotsNeeded;
@@ -325,7 +591,6 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
     return assignments;
   }, [wishes, activeCoordinates.length]);
 
-  // Quick coordinate lookup: `${r}-${c}` -> active cell index
   const coordIndexLookup = useMemo(() => {
     const map = new Map<string, number>();
     for (const item of activeCoordinates) {
@@ -378,25 +643,38 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
 
               if (assigned) {
                 const isSpotlighted = assigned.wishIdx === safeActiveIndex;
+                const hasSelfie = Boolean(assigned.wish.selfieDataUrl);
                 return (
                   <button
                     key={`${r}-${c}`}
                     type="button"
                     onClick={() => handleSelectWish(assigned.wishIdx)}
                     title={`${assigned.wish.playerName}: ${assigned.wish.text}`}
-                    className={`aspect-square rounded-lg sm:rounded-xl bg-gradient-to-br ${colorClass} border text-white flex flex-col items-center justify-center p-0.5 overflow-hidden shadow-md transition-all duration-300 hover:scale-110 hover:z-20 cursor-pointer ${
+                    className={`aspect-square rounded-lg sm:rounded-xl bg-gradient-to-br ${colorClass} border text-white flex flex-col items-center justify-center ${
+                      hasSelfie ? 'p-0' : 'p-0.5'
+                    } overflow-hidden shadow-md transition-all duration-300 hover:scale-110 hover:z-20 cursor-pointer ${
                       isSpotlighted
                         ? 'ring-2 sm:ring-4 ring-yellow-300 scale-110 z-10 shadow-yellow-300/40 shadow-lg'
                         : 'opacity-95'
                     }`}
                   >
-                    <AvatarDisplay
-                      avatar={assigned.wish.avatar}
-                      className="w-5 h-5 sm:w-7 sm:h-7 shrink-0 drop-shadow-sm"
-                    />
-                    <span className="hidden md:block text-[9px] font-extrabold leading-tight truncate max-w-full px-0.5 mt-0.5 text-white/95">
-                      {getShortSnippet(assigned.wish.text)}
-                    </span>
+                    {hasSelfie ? (
+                      <img
+                        src={assigned.wish.selfieDataUrl}
+                        alt={assigned.wish.playerName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <>
+                        <AvatarDisplay
+                          avatar={assigned.wish.avatar}
+                          className="w-5 h-5 sm:w-7 sm:h-7 shrink-0 drop-shadow-sm"
+                        />
+                        <span className="hidden md:block text-[9px] font-extrabold leading-tight truncate max-w-full px-0.5 mt-0.5 text-white/95">
+                          {getShortSnippet(assigned.wish.text)}
+                        </span>
+                      </>
+                    )}
                   </button>
                 );
               }
@@ -439,17 +717,26 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                 </button>
               )}
 
-              <div className="flex-1 text-center space-y-1.5 min-w-0">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{copy.spotlightLabel}</span>
-                </div>
-                <p className="text-lg sm:text-2xl font-black text-slate-800 break-words leading-snug">
-                  “{activeWish.text}”
-                </p>
-                <div className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600">
-                  <AvatarDisplay avatar={activeWish.avatar} className="w-5 h-5 shrink-0" />
-                  <span>{activeWish.playerName}</span>
+              <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 min-w-0">
+                {activeWish.selfieDataUrl && (
+                  <img
+                    src={activeWish.selfieDataUrl}
+                    alt={activeWish.playerName}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-amber-300 shadow-lg shrink-0"
+                  />
+                )}
+                <div className="flex-1 text-center space-y-1.5 min-w-0">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{copy.spotlightLabel}</span>
+                  </div>
+                  <p className="text-lg sm:text-2xl font-black text-slate-800 break-words leading-snug">
+                    “{activeWish.text}”
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-rose-600">
+                    <AvatarDisplay avatar={activeWish.avatar} className="w-5 h-5 shrink-0" />
+                    <span>{activeWish.playerName}</span>
+                  </div>
                 </div>
               </div>
 
@@ -502,7 +789,7 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
 
               return (
                 <button
-                  key={`${wish.playerId}-${idx}`}
+                  key={wish.id ?? `${wish.playerId}-${idx}`}
                   type="button"
                   onClick={() => handleSelectWish(idx)}
                   className={`rounded-2xl border-2 text-start transition-all duration-200 hover:scale-105 cursor-pointer max-w-xs ${cardTheme} ${sizeClass} ${
@@ -512,10 +799,18 @@ export const HostMosaic70: React.FC<HostMosaic70Props> = ({ wishes, momName }) =
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <AvatarDisplay
-                      avatar={wish.avatar}
-                      className="w-7 h-7 shrink-0 mt-0.5"
-                    />
+                    {wish.selfieDataUrl ? (
+                      <img
+                        src={wish.selfieDataUrl}
+                        alt={wish.playerName}
+                        className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-sm shrink-0 mt-0.5"
+                      />
+                    ) : (
+                      <AvatarDisplay
+                        avatar={wish.avatar}
+                        className="w-7 h-7 shrink-0 mt-0.5"
+                      />
+                    )}
                     <div className="min-w-0">
                       <p className="font-bold leading-snug break-words">
                         “{wish.text}”

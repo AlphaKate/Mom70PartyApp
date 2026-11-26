@@ -248,7 +248,9 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   const gridColsClass =
     deck.length <= 8
       ? 'grid-cols-2 sm:grid-cols-4'
-      : 'grid-cols-3 sm:grid-cols-4';
+      : deck.length <= 16
+      ? 'grid-cols-3 sm:grid-cols-4'
+      : 'grid-cols-4 sm:grid-cols-5';
 
   return (
     <div dir={dir} className="relative w-full max-w-3xl mx-auto select-none space-y-4">

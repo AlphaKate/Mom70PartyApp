@@ -23,6 +23,7 @@ const he = {
   disconnected: 'מנותק',
   localMode: 'סנכרון מקומי (אותו מכשיר)',
   onlineMode: 'מחובר P2P בזמן אמת',
+  versionLabel: 'גרסה',
 
   // Accessibility & Audio
   languageLabel: 'שפה',
@@ -51,13 +52,6 @@ const he = {
   soundOn: 'צלילים פעילים',
   soundOff: 'מושתק',
 
-  // Spotify
-  spotifyTitle: 'המוזיקה של אמא (Spotify)',
-  spotifyDefaultNote: 'פלייליסט חגיגי ברירת מחדל',
-  spotifyExpand: 'הצג נגן',
-  spotifyCollapse: 'מזער נגן',
-  spotifyOpenExternal: 'פתח ב-Spotify',
-
   // Setup Phase
   setupTitle: 'הכנת המסיבה של אמא',
   setupSubtitle: 'חברו את תיקיית התמונות והשאלות המשפחתית, או התחילו מיד עם תוכן מובנה',
@@ -74,9 +68,6 @@ const he = {
   sheetsUrlLabel: 'קישור לטבלת Google Sheets עם שאלות (אופציונלי)',
   sheetsUrlPlaceholder: 'https://docs.google.com/spreadsheets/d/...',
   sheetsUrlHint: 'אם ריק, המשחק יעלה עם שאלות ותמונות לדוגמה בעברית, רוסית ואנגלית',
-  spotifyUrlLabel: 'קישור לפלייליסט Spotify של אמא (אופציונלי)',
-  spotifyUrlPlaceholder: 'https://open.spotify.com/playlist/...',
-  spotifyUrlHint: 'המוזיקה תתנגן מתוך מסך הטלוויזיה במהלך הלובי והמשחקים',
   momNameLabel: 'שם החוגגת',
   openGuideBtn: 'מדריך הכנה ל-Drive ו-Sheets',
   openLobbyBtn: 'פתיחת לובי המסיבה',
@@ -87,10 +78,8 @@ const he = {
   guideStep1Desc: 'העלו תמונות לתיקייה בשם photos ושתפו בהרשאת "כל בעל הקישור יכול לצפות" (Viewer).',
   guideStep2Title: '2. צרו קובץ Google Sheets לשאלות',
   guideStep2Desc: 'השתמשו בעמודות: category (trivia/quotes), question_he, question_ru, question_en, options_he, options_ru, options_en (מופרד ב-|), correct_index (0-3), funfact_he, funfact_ru, funfact_en.',
-  guideStep3Title: '3. הוסיפו פלייליסט Spotify',
-  guideStep3Desc: 'העתיקו קישור שיתוף של פלייליסט אהוב על אמא והדביקו בשדה ה-Spotify.',
-  guideStep4Title: '4. מוכן לשחק!',
-  guideStep4Desc: 'אפשר גם להשאיר את השדות ריקים ולשחק מיד עם חבילת השאלות והאיורים המובנים.',
+  guideStep3Title: '3. מוכן לשחק!',
+  guideStep3Desc: 'אפשר גם להשאיר את השדות ריקים ולשחק מיד עם חבילת השאלות והאיורים המובנים.',
   guidePrivacyNote: 'האפליקציה אינה שומרת קבצים בענן — הכל נטען ישירות לדפדפן ומשודר ישירות בין המכשירים (WebRTC P2P).',
 
   // Lobby Phase
@@ -223,6 +212,18 @@ const he = {
   wishesSubmittedTitle: 'הברכה נשלחה לפסיפס!',
   wishesSubmittedDesc: 'חפשו את הברכה שלכם זוהרת בתוך הספרה 70 על המסך המרכזי!',
   editWishBtn: 'עריכת הברכה / עדכון',
+  wishesQuotaBadge: 'נשלחו {count} מתוך {max} ברכות',
+  wishesMaxReachedTitle: 'שלחת את כל 5 הברכות שלך! 🎉',
+  wishesMaxReachedDesc: 'אפשר לערוך כל אחת מהברכות שלך למטה ולראות אותן זוהרות בפסיפס ה-70',
+  wishesSendAnotherBtn: 'שליחת ברכה נוספת',
+  wishesUpdateBtn: 'שמירת עדכון לברכה',
+  wishesYourSentList: 'הברכות ששלחת ({count}/{max})',
+  takeSelfieBtn: 'צלם סלפי',
+  pickPhotoBtn: 'בחר תמונה',
+  removeSelfieBtn: 'הסר תמונה',
+  selfieOptionalLabel: 'צרפו סלפי חי מהאירוע (אופציונלי — נשלח ישירות למסך ללא שמירה בענן)',
+  selfieProcessing: 'מעבד תמונה...',
+  selfieError: 'לא ניתן היה לטעון את התמונה, נסו תמונה אחרת',
   wishesWaiting: 'הברכות מהטלפונים יאירו כאן מיד...',
   wishesCount: 'ברכות בפסיפס',
   mosaicTitle: 'פסיפס האהבה — 70 שנה לאמא',
@@ -264,6 +265,7 @@ const ru: TranslationDict = {
   disconnected: 'Отключено',
   localMode: 'Локальная синхронизация (одно устройство)',
   onlineMode: 'P2P связь в реальном времени',
+  versionLabel: 'Версия',
 
   // Accessibility & Audio
   languageLabel: 'Язык',
@@ -292,13 +294,6 @@ const ru: TranslationDict = {
   soundOn: 'Звук включён',
   soundOff: 'Без звука',
 
-  // Spotify
-  spotifyTitle: 'Любимая музыка мамы (Spotify)',
-  spotifyDefaultNote: 'Праздничный плейлист по умолчанию',
-  spotifyExpand: 'Показать плеер',
-  spotifyCollapse: 'Свернуть плеер',
-  spotifyOpenExternal: 'Открыть в Spotify',
-
   // Setup Phase
   setupTitle: 'Настройка праздника для мамы',
   setupSubtitle: 'Подключите семейную папку с фото и вопросами или начните сразу со встроенным контентом',
@@ -315,9 +310,6 @@ const ru: TranslationDict = {
   sheetsUrlLabel: 'Ссылка на таблицу Google Sheets с вопросами (необязательно)',
   sheetsUrlPlaceholder: 'https://docs.google.com/spreadsheets/d/...',
   sheetsUrlHint: 'Если оставить пустым, игра запустится со встроенными вопросами и иллюстрациями на 3 языках',
-  spotifyUrlLabel: 'Ссылка на плейлист Spotify для мамы (необязательно)',
-  spotifyUrlPlaceholder: 'https://open.spotify.com/playlist/...',
-  spotifyUrlHint: 'Музыка будет звучать на главном экране во время лобби и игр',
   momNameLabel: 'Имя именинницы',
   openGuideBtn: 'Инструкция по Drive и Sheets',
   openLobbyBtn: 'Открыть лобби праздника',
@@ -328,10 +320,8 @@ const ru: TranslationDict = {
   guideStep1Desc: 'Загрузите фото в папку photos и откройте доступ «Просматривать могут все, у кого есть ссылка».',
   guideStep2Title: '2. Создайте таблицу Google Sheets с вопросами',
   guideStep2Desc: 'Столбцы: category (trivia/quotes), question_he, question_ru, question_en, options_he, options_ru, options_en (через |), correct_index (0-3), funfact_he, funfact_ru, funfact_en.',
-  guideStep3Title: '3. Добавьте плейлист Spotify',
-  guideStep3Desc: 'Скопируйте ссылку на любимый плейлист мамы и вставьте в поле Spotify.',
-  guideStep4Title: '4. Всё готово к игре!',
-  guideStep4Desc: 'Можно оставить поля пустыми и сразу сыграть с готовым праздничным набором.',
+  guideStep3Title: '3. Всё готово к игре!',
+  guideStep3Desc: 'Можно оставить поля пустыми и сразу сыграть с готовым праздничным набором.',
   guidePrivacyNote: 'Приложение ничего не хранит в облаке — всё передаётся напрямую между устройствами (WebRTC P2P).',
 
   // Lobby Phase
@@ -464,6 +454,18 @@ const ru: TranslationDict = {
   wishesSubmittedTitle: 'Поздравление добавлено в мозаику!',
   wishesSubmittedDesc: 'Ищите ваши слова внутри большой цифры 70 на главном экране!',
   editWishBtn: 'Изменить пожелание',
+  wishesQuotaBadge: 'Отправлено {count} из {max} пожеланий',
+  wishesMaxReachedTitle: 'Вы отправили все 5 пожеланий! 🎉',
+  wishesMaxReachedDesc: 'Вы можете отредактировать любое пожелание ниже — все они сияют в мозаике 70',
+  wishesSendAnotherBtn: 'Отправить ещё пожелание',
+  wishesUpdateBtn: 'Сохранить изменения',
+  wishesYourSentList: 'Ваши пожелания ({count}/{max})',
+  takeSelfieBtn: 'Сделать селфи',
+  pickPhotoBtn: 'Выбрать фото',
+  removeSelfieBtn: 'Удалить фото',
+  selfieOptionalLabel: 'Добавьте селфи с праздника (необязательно — без сохранения в облаке)',
+  selfieProcessing: 'Обработка фото...',
+  selfieError: 'Не удалось загрузить фото, попробуйте другое',
   wishesWaiting: 'Поздравления с телефонов появятся здесь...',
   wishesCount: 'Поздравлений в мозаике',
   mosaicTitle: 'Мозаика любви — Маме 70 лет',
@@ -502,6 +504,7 @@ const en: TranslationDict = {
   disconnected: 'Disconnected',
   localMode: 'Local Sync (Same Device)',
   onlineMode: 'Real-Time P2P Connected',
+  versionLabel: 'Version',
 
   // Accessibility & Audio
   languageLabel: 'Language',
@@ -530,13 +533,6 @@ const en: TranslationDict = {
   soundOn: 'Sound On',
   soundOff: 'Muted',
 
-  // Spotify
-  spotifyTitle: "Mom's Party Music (Spotify)",
-  spotifyDefaultNote: 'Default celebration playlist',
-  spotifyExpand: 'Show Player',
-  spotifyCollapse: 'Minimize Player',
-  spotifyOpenExternal: 'Open in Spotify',
-
   // Setup Phase
   setupTitle: "Set Up Mom's 70th Party",
   setupSubtitle: 'Connect your family Drive & Sheets links, or launch immediately with built-in content',
@@ -553,9 +549,6 @@ const en: TranslationDict = {
   sheetsUrlLabel: 'Google Sheets Questions Link (Optional)',
   sheetsUrlPlaceholder: 'https://docs.google.com/spreadsheets/d/...',
   sheetsUrlHint: 'Leave blank to play with rich built-in trilingual questions & illustrations',
-  spotifyUrlLabel: "Mom's Spotify Playlist Link (Optional)",
-  spotifyUrlPlaceholder: 'https://open.spotify.com/playlist/...',
-  spotifyUrlHint: 'Music plays directly on the Host TV screen during the lobby and games',
   momNameLabel: 'Guest of Honor',
   openGuideBtn: 'How to Prepare Drive & Sheets',
   openLobbyBtn: 'Open Party Lobby',
@@ -566,10 +559,8 @@ const en: TranslationDict = {
   guideStep1Desc: 'Upload family photos into a "photos" folder and set sharing to "Anyone with the link can view".',
   guideStep2Title: '2. Create a Google Sheet for Questions',
   guideStep2Desc: 'Use columns: category (trivia/quotes), question_he, question_ru, question_en, options_he, options_ru, options_en (separated by |), correct_index (0-3), funfact_he, funfact_ru, funfact_en.',
-  guideStep3Title: '3. Add a Spotify Playlist',
-  guideStep3Desc: "Copy the share link of Mom's favorite playlist and paste it into the Spotify field.",
-  guideStep4Title: '4. Ready to Celebrate!',
-  guideStep4Desc: 'You can also leave the fields empty and play right away with our built-in celebration pack.',
+  guideStep3Title: '3. Ready to Celebrate!',
+  guideStep3Desc: 'You can also leave the fields empty and play right away with our built-in celebration pack.',
   guidePrivacyNote: 'This app stores zero data in the cloud — everything syncs directly device-to-device via WebRTC P2P.',
 
   // Lobby Phase
@@ -702,6 +693,18 @@ const en: TranslationDict = {
   wishesSubmittedTitle: 'Your Wish Is Glowing on the Mosaic!',
   wishesSubmittedDesc: 'Look at the big number 70 on the main screen to spot your blessing!',
   editWishBtn: 'Edit / Update Wish',
+  wishesQuotaBadge: 'Sent {count} of {max} wishes',
+  wishesMaxReachedTitle: 'You sent all 5 wishes! 🎉',
+  wishesMaxReachedDesc: 'You can still edit any wish below and spot them shining inside the 70 mosaic',
+  wishesSendAnotherBtn: 'Send Another Wish',
+  wishesUpdateBtn: 'Save Updated Wish',
+  wishesYourSentList: 'Your Sent Wishes ({count}/{max})',
+  takeSelfieBtn: 'Take Selfie',
+  pickPhotoBtn: 'Pick Photo',
+  removeSelfieBtn: 'Remove Photo',
+  selfieOptionalLabel: 'Attach a live event selfie (optional — direct P2P, zero cloud storage)',
+  selfieProcessing: 'Processing photo...',
+  selfieError: 'Could not load that photo, please try another image',
   wishesWaiting: 'Family wishes from phones will light up here...',
   wishesCount: 'Wishes in Mosaic',
   mosaicTitle: 'Mosaic of Love — 70 Years of Mom',
